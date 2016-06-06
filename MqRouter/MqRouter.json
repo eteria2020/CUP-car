@@ -1,0 +1,9 @@
+{
+ "apps" : [{
+	"name"	: "MqRouter",
+	"script": "MqRouter.js",
+	"merge_logs" : true,
+	"error_file" : "/var/log/services/MqRouter_error.log",
+	"out_file" : "/var/log/services/MqRouter_out.log"
+ }]
+}

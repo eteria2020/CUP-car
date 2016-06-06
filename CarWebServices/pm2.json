@@ -1,0 +1,23 @@
+{
+  "apps" : [{
+      "name"	: "CarWebServices",
+      "script"	: "CarWebServices.js",
+      "node_args"	: [],
+	  "merge_logs" : true,
+      "log_date_format"  : "DD/MM/YYYY HH:mm Z",
+	  "error_file" : "/var/log/services/CarWebServices_error.log",
+	  "out_file" : "/var/log/services/CarWebServices_error_out.log",
+      "instances"   : 4,
+      "autorestart" : true,
+
+      "env": {
+	"DEBUG" : false
+      },
+
+      "env_debug" : {
+        "DEBUG" : false
+      }
+
+  }]
+
+}

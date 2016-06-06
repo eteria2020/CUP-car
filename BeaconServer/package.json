@@ -1,0 +1,60 @@
+{
+<<<<<<< HEAD
+  "name": "beacon-server",
+  "version": "1.0.0",
+  "description": "Service collecting beacons from cars",
+=======
+  "name": "BeaconServer",
+  "version": "1.0.0",
+  "private" : true,
+  "description": "Server service for receive beacons from vehicles",
+>>>>>>> 865b8e9babbec10176fd481d9131480c55f9f9aa
+  "main": "BeaconServer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+<<<<<<< HEAD
+    "url": " git@git.omniaevo.it:sharengo-services/car/CarWebServices"
+  },
+  "keywords": [
+    "webservices",
+    "car"
+  ],
+  "author": "Massimo Belluz",
+  "license": "unlicensed",
+  "dependencies": {
+    "console-stamp": "^0.2.0",
+    "kue": "^0.10.5",
+    "mcrypt": "^0.10.9",
+    "async" : "",
+    "blueimp-md5" : "",
+    "pg": "^4.4.4",
+    "pg-native": "^1.10.0",
+=======
+    "url": " git@git.omniaevo.it:sharengo-services/car/BeaconServer"
+  },
+  "keywords": [
+    "services",
+    "beacon",
+    "car"
+  ],
+  "author": "Massimo Belluz",
+  "license": "commercial",
+  "dependencies": {
+    "console-stamp": "^0.2.0",
+    "kue": "^0.10.5",
+    "pg": "^4.4.4",
+    "pg-native": "^1.10.0",
+    "pg-spice": "^2.0.1",
+    "pg-pubsub": "^0.1.1",
+    "mcrypt": "*",
+    "blueimp-md5": "*",
+    "async": "*",
+    "merge": "*",
+    "mongodb": "^2.0.34"
+    
+>>>>>>> 865b8e9babbec10176fd481d9131480c55f9f9aa
+  }
+}
