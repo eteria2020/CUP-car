@@ -1,6 +1,4 @@
 
-<<<<<<< HEAD
-=======
 //#!/usr/bin/env nodemon -e js,ls
 
 'use strict';
@@ -16,7 +14,6 @@ var config = require('./config');
 var globalConfig = require('../config/globalConfig');
 
 
->>>>>>> 865b8e9babbec10176fd481d9131480c55f9f9aa
 
 //require('v8-profiler');
 
