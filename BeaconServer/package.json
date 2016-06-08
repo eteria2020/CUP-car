@@ -1,7 +1,7 @@
 {
   "name": "BeaconServer",
   "version": "1.0.0",
-  "private" : true,
+  "private": true,
   "description": "Server service for receive beacons from vehicles",
   "main": "BeaconServer.js",
   "scripts": {
@@ -21,9 +21,9 @@
     "console-stamp": "^0.2.0",
     "kue": "^0.10.5",
     "mcrypt": "^0.10.9",
-    "async" : "",
-    "blueimp-md5" : "",
+    "async": "",
+    "blueimp-md5": "",
     "pg": "^4.4.4",
-    "pg-native": "^1.10.0",
+    "pg-native": "^1.10.0"
   }
 }
