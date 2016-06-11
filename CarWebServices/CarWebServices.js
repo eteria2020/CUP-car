@@ -1,5 +1,27 @@
-#!/usr/bin/env nodemon -e js,ls
-
+#!/bin/bash
+#
+# NAME
+#   CarWebServices.sh
+#
+# DESCRIPTION
+#    This module will expose an http/https pseudo-REST interface for
+#    data requests and data push from vehicles.
+#    Should run as daemon directly or using a process manager like PM2
+#
+# CONFIGURATIONS
+#    Global parameters are in  ../config/globalConfig.js
+#    Local parameters for this module are in  config.js
+#
+# COPYRIGHT AND LICENSE
+#    Copyright (C) 2015-2016 Bulweria Ltd.
+#
+# AUTHOR
+#    Massimo Belluz - massimo.belluz@bulweria.com
+#
+# EDIT
+#    2016-06-10 - @massimobelluz - Refactoring
+#
+################################################################################
 'use strict';
 
 
@@ -12,16 +34,30 @@ var validator = require('validator');
 
 
 // Configurations
-var config = require('./config');
-var globalConfig = require('../config/globalConfig');
+try {
+    var config = require('./config');
+} catch(ex) {
+    console.error("FATAL: Missing or invalid ./config.js ");
+    exit(1);
+}
 
-var conString =         globalConfig.conString;
-var logPath =           globalConfig.logPath;
-var serverName =        globalConfig.serverName || 'CarWebServices';
-var standardPort =      config.httpPort;
-var unsecurePort =      config.httpUnsecurePort;
-var debugMode =         config.debugMode;
 
+try {
+    var globalConfig = require('../config/globalConfig');
+}   catch(ex) {
+    console.warn("Missing or invalid ../config/globalConfig.js");
+    var globalConfig = {};
+}
+
+var conString =         config.pgDb || globalConfig.pgDb;
+var redisServer =       config.redisServer || globalConfig.redisServer;
+var redisDb =           config.redisDb;
+var logPath =           config.logPath || globalConfig.logPath;
+var serverName =        config.serverName || 'CarWebServices';
+var standardPort =      config.httpPort || 8123;
+var unsecurePort =      config.httpUnsecurePort || 8121;
+var debugMode =         config.debugMode || false;
+var redisCluster =      globalConfig.redisCluster || [];
 
 
 
@@ -54,12 +90,14 @@ var dlog = {
 }
 
 
+var Redis = require('ioredis');
 var kue = require('kue');
 var jkue = kue.createQueue({
   prefix: 'q',
   redis: {
-    port: 6379,
-    host: '127.0.0.1',
+    createClientFactory: function () {
+        return new Redis.Cluster(redisCluster);
+      }
     auth: '',
     db: 4,
     options: {
@@ -68,6 +106,7 @@ var jkue = kue.createQueue({
   }
 });
 
+jkue.create('test', {key: 'abc'}).save(function(err) { if (err) console.error(err)});
 
 // Globals
 
