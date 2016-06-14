@@ -1,17 +1,41 @@
-//Porta socket rivolto verso server
-var inSockPort=8000;
 
-//Porta socket rivolto verso tablet
-var outSockPort=8001;
 
-var debug=true;
+// Basic modules
+var stamp =     require('console-stamp')(console, 'dd/mm/yyyy HH:MM:ss.l');
+
+
+// Configurations
+try {
+    var config = require('./config');
+} catch(ex) {
+    console.error("FATAL: Missing or invalid ./config.js ");
+    exit(1);
+}
+
+
+try {
+    var globalConfig = require('../config/globalConfig');
+}   catch(ex) {
+    console.warn("Missing or invalid ../config/globalConfig.js");
+    var globalConfig = {};
+}
+
+var inSockPort =        config.inSockPort || 8000;
+var outSockPort =       config.outSockPort || 8001;
+var redisServer =       config.redisServer || globalConfig.redisServer;
+var redisDb =           config.redisDb;
+var logPath =           config.logPath || globalConfig.logPath;
+var debug =             config.debugMode || false;
+
+
+
+
 var withZap=false;
 var withCrypto=true;
 var withSegfaultHandler=false;
-var withRRD=true;
-var withRedis=true;
+var withRRD=false;
+var withRedis=false;
 
-var logPath = '/var/log/services/';
 
 var bunyan = require('bunyan');
 var log = bunyan.createLogger({

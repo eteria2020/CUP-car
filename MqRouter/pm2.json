@@ -1,0 +1,22 @@
+{
+  "apps" : [{
+      "name"	: "MqRouter",
+      "script"	: "MqRouter.js",
+      "node_args"	: [],
+	  "merge_logs" : true,
+      "log_date_format"  : "DD/MM/YYYY HH:mm Z",
+	  "error_file" : "/var/log/services/MqRouter_error.log",
+	  "out_file" : "/var/log/services/MqRouter_error_out.log",
+      "autorestart" : true,
+
+      "env": {
+	"DEBUG" : false
+      },
+
+      "env_debug" : {
+        "DEBUG" : false
+      }
+
+  }]
+
+}

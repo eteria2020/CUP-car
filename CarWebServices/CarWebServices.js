@@ -1,27 +1,27 @@
-#!/bin/bash
-#
-# NAME
-#   CarWebServices.sh
-#
-# DESCRIPTION
-#    This module will expose an http/https pseudo-REST interface for
-#    data requests and data push from vehicles.
-#    Should run as daemon directly or using a process manager like PM2
-#
-# CONFIGURATIONS
-#    Global parameters are in  ../config/globalConfig.js
-#    Local parameters for this module are in  config.js
-#
-# COPYRIGHT AND LICENSE
-#    Copyright (C) 2015-2016 Bulweria Ltd.
-#
-# AUTHOR
-#    Massimo Belluz - massimo.belluz@bulweria.com
-#
-# EDIT
-#    2016-06-10 - @massimobelluz - Refactoring
-#
-################################################################################
+/*!/bin/bash
+*
+* NAME
+*   CarWebServices.sh
+*
+* DESCRIPTION
+*    This module will expose an http/https pseudo-REST interface for
+*    data requests and data push from vehicles.
++    Should run as daemon directly or using a process manager like PM2
+*
+* CONFIGURATIONS
+*    Global parameters are in  ../config/globalConfig.js
+*    Local parameters for this module are in  config.js
+*
+* COPYRIGHT AND LICENSE
+*   Copyright (C) 2015-2016 Bulweria Ltd.
+*
+* AUTHOR
+*    Massimo Belluz - massimo.belluz@bulweria.com
+*
+* EDIT
+*    2016-06-10 - @massimobelluz - Refactoring
+*
+****************************************************************************/
 'use strict';
 
 
@@ -90,24 +90,6 @@ var dlog = {
 }
 
 
-var Redis = require('ioredis');
-var kue = require('kue');
-var jkue = kue.createQueue({
-  prefix: 'q',
-  redis: {
-    createClientFactory: function () {
-        return new Redis.Cluster(redisCluster);
-      }
-    auth: '',
-    db: 4,
-    options: {
-      // see https://github.com/mranney/node_redis#rediscreateclient
-    }
-  }
-});
-
-jkue.create('test', {key: 'abc'}).save(function(err) { if (err) console.error(err)});
-
 // Globals
 
 var server;
@@ -129,7 +111,10 @@ var funcs = require('./restFunctions')( {pg: pg , conString: conString, validato
 */
 function ApiLog(ip, route, plate, payload) {
   var xpayload = { timestamp : new Date() , host : ip , pid : process.pid , payload : payload };
+  dlog.d(xpayload);
+
   //console.log("JSON2 lenght=" + xpayload.length + xpayload );
+  /*
   jkue.create('log_api', {
     title : "Api :" + xpayload.timestamp,
     payload : xpayload
@@ -139,6 +124,7 @@ function ApiLog(ip, route, plate, payload) {
     else
         console.log("Queued : " + xpayload);
   });
+  */
 }
 
 

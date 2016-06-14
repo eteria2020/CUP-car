@@ -19,7 +19,6 @@
   "dependencies": {
     "console-stamp": "^0.2.0",
     "kue": "^0.10.5",
-    "ioredis": "",
     "morgan": "^1.6.1",
     "pg": "^4.4.4",
     "pg-native": "^1.10.0",

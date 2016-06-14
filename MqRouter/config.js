@@ -1,8 +1,9 @@
 // db
 exports.pgDb = "postgres://sharengo:gmjk51pa@dm-1:5432/sharengo";
 exports.debugMode = process.env.DEBUG=='true' || process.env.DEBUG=='1' || false;
-exports.httpPort =  8123;
-exports.httpUnsecurePort =  8121;
+exports.inSockPort = 8000;   //Internal port for services connection
+exports.outSockPort = 8001;  //External port for vehicles
+exports.redisDb =  1;
 exports.logPath = "/var/log/services/";
 exports.serverName = "Sharengo";
 

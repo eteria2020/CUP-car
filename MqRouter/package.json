@@ -1,0 +1,30 @@
+{
+  "name": "mq-router",
+  "version": "1.0.0",
+  "description": "zeroMQ based message router",
+  "main": "MqRouter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": " git@git.omniaevo.it:sharengo-services/car/MqRouter"
+  },
+  "keywords": [
+    "messaging",
+    "zeroMQ",
+    "car"
+  ],
+  "author": "Massimo Belluz",
+  "license": "unlicensed",
+  "dependencies": {
+    "console-stamp": "^0.2.0",
+    "bunyan": "",
+    "crypto": "",
+    "ioredis": "",
+    "rrd" : "",
+    "zmq" : "",
+    "z85":"",
+    "zmq-zap":""
+  }
+}
