@@ -6,7 +6,7 @@
 	  "merge_logs" : true,
       "log_date_format"  : "DD/MM/YYYY HH:mm Z",
 	  "error_file" : "/var/log/services/CarWebServices_error.log",
-	  "out_file" : "/var/log/services/CarWebServices_error_out.log",
+	  "out_file" : "/var/log/services/CarWebService_out.log",
       "instances"   : 4,
       "autorestart" : true,
 
