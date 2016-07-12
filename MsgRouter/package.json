@@ -1,0 +1,33 @@
+{
+  "name": "message-router-service",
+  "version": "0.0.1",
+  "description": "Message Router Service",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": " git@git.omniaevo.it:sharengo-services/car/CarWebServices"
+  },
+  "keywords": [
+    "webservices",
+    "message",
+    "message router"
+  ],
+  "author": "Massimo De Luisa",
+  "license": "ISC",
+  "dependencies": {
+    "console-stamp": "^0.2.2",
+    "morgan": "^1.7.0",
+    "pg": "^6.0.2",
+    "pg-native": "^1.10.0",
+    "restify": "^4.1.1",
+    "validator": "^4.5.2",
+    "node-telegram-bot-api": "^0.23.3",
+    "bunyan": "^1.8.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.0.1"
+  }
+}
