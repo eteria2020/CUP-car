@@ -18,14 +18,12 @@
   "author": "Massimo De Luisa",
   "license": "ISC",
   "dependencies": {
-    "console-stamp": "^0.2.2",
-    "morgan": "^1.7.0",
+    "node-telegram-bot-api": "^0.23.3",
     "pg": "^6.0.2",
     "pg-native": "^1.10.0",
-    "restify": "^4.1.1",
-    "validator": "^4.5.2",
-    "node-telegram-bot-api": "^0.23.3",
-    "bunyan": "^1.8.1"
+    "pg-pubsub": "^0.3.0",
+    "promise": "^7.1.1",
+    "moment": "^2.14.1"
   },
   "devDependencies": {
     "eslint": "^3.0.1"
