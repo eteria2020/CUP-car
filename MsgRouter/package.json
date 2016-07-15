@@ -1,6 +1,6 @@
 {
   "name": "message-router-service",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Message Router Service",
   "main": "server.js",
   "scripts": {

@@ -246,7 +246,7 @@ class SOSMessage extends GenericMessage {
             "\nTrip ID: <a href=\"http://admin.sharengo.it/trips/details/" + this.trip.id + "\">" + this.trip.id + "</a>" +
             "\nGiven Number: " + this.givenPhoneNumber +
             "\nCar Plate: " + this.car.plate +
-            "\nPosition: <a ng-href=\"https://maps.google.com/?q=" + this.car.latitude + "," + this.car.longitude + "\" target=\"_blank\" href=\"https://maps.google.com/?q=" + this.car.latitude + "," + this.car.longitude + "\">Open Google Map</a>" +
+            "\nPosition: <a ng-href=\"https://maps.google.com/?q=" + this.geo.latitude + "," + this.geo.longitude + "\" target=\"_blank\" href=\"https://maps.google.com/?q=" + this.geo.latitude + "," + this.geo.longitude + "\">Open Google Map</a>" +
             "\nMore Details: <a href=\"http://admin.sharengo.it/notifications/details/" + this.id + "\">Admin Page</a>";
     }
 }
