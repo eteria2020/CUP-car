@@ -4,8 +4,6 @@ services:
     image: node:6.3.0-wheezy
     container_name: cup-msg-router-service
     ports:
-      - "18126:18126"
-      - "18127:18127"
       - "5858:5858"
     volumes:
       - .:/app
