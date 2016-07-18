@@ -1,0 +1,27 @@
+version: '2'
+services:
+  car-web-services:
+    image: node:6.3.0-wheezy
+    container_name: cup-msg-router-service
+    ports:
+      - "5858:5858"
+    volumes:
+      - .:/app
+      - ./debug/logs:/var/log/services/debug/
+    command: bash -c "cd /app && npm install && node --debug=5858 server.js"
+    environment:
+      - DEBUG=true
+      - DOCKERDEBUG=true
+    external_links:
+      - sharengo-redis:dm-1
+      - sharengo-postgres:dm-1
+    networks:
+      - back-tier
+      - front-tier
+networks:
+  front-tier:
+    external:
+      name: sharengo-front-tier
+  back-tier:
+    external:
+      name: sharengo-back-tier
