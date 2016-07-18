@@ -1,9 +1,9 @@
 // DataBase
-exports.pgHost = "dm-1";
+exports.pgHost = "host.domain";
 exports.pgPort = 5432;
-exports.pgDbName = "sharengo";
-exports.pgUser = "sharengo";
-exports.pgPassw = "gmjk51pa";
+exports.pgDbName = "dbname";
+exports.pgUser = "username";
+exports.pgPassw = "userpass";
 exports.pgConnectionTimeout = 5; // 5 seconds
 exports.pgDb = "postgres://" + exports.pgUser +
     ":" + exports.pgPassw + "@" + exports.pgHost +
@@ -22,8 +22,8 @@ exports.logName = exports.serverName + "_access.log";
 exports.globalConfigFilePath = "../config/globalConfig";
 
 // Telegram
-exports.telegramTokeId = "224402891:AAGop9luiZtrh6yW2X50ZpyboyrJ9mqBE4M";
-exports.telegramPrivateGroupID = -1001052334823;
+exports.telegramTokeId = "";
+exports.telegramPrivateGroupID = 0;
 
 // DEBUG
 exports.debugMode = process.env.DEBUG === "true" || process.env.DEBUG === "1" || false;

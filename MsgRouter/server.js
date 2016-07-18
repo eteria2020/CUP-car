@@ -52,14 +52,7 @@ global.config = {
     },
     server: {
         name: localConfigs.serverName || "MsgRouterService",
-        standardPort: localConfigs.httpPort || 8126,
-        unsecurePort: localConfigs.httpUnsecurePort || 8127,
         debugMode: localConfigs.debugMode || false
-    },
-    certs: {
-        serverCert: localConfigs.globalCertificateFilePath || "../ssl/server.cer",
-        serverKey: localConfigs.globalKeyFilePath || "../ssl/server.key",
-        certAuthority: localConfigs.globalCAFilePath || "../ssl/ca.cer"
     },
     telegram: {
         tokenId: localConfigs.telegramTokeId || globalConfigs.telegramTokeId,
