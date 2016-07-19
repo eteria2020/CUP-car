@@ -164,11 +164,11 @@ class SOSMessage extends GenericMessage {
     get customer() { return this._customer; }
 
     get latitude() {
-        return parseDouble(this.geo.coordinates[1]);
+        return parseFloat(this.geo.coordinates[1].toString().substring(0,10));
     }
 
     get longitude() {
-        return parseDouble(this.geo.coordinates[0]);
+        return parseFloat(this.geo.coordinates[0].toString().substring(0,10));
     }
 
     set km(km) { this._km = km; }
