@@ -1,8 +1,4 @@
-/*require('nodetime').profile({
-    accountKey: '36eb71a2cf9af6e04281400e270cd9082c20401c',
-    appName: 'UdpServer app'
-  });
-*/
+
 
 //require('v8-profiler');
 
