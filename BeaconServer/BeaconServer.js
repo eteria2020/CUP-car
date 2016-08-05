@@ -104,6 +104,9 @@ function pkcs5_pad (text, blocksize) {
 }
 
 
+/*
+ * Ecripts a string with DES and embedded key
+*/
 function javacrypt(text) {
   var Ecb = new mcrypt.MCrypt('des', 'ecb');
   var key="+xBE450u";
@@ -112,10 +115,7 @@ function javacrypt(text) {
   Ecb.validateKeySize(false);
   Ecb.open(key);
 
-  //console.log("BlockSize=" + blockSize);
-  //console.log("Text=" + text + " " + text.length);
   text = pkcs5_pad(text, blockSize);
-  //console.log("Text(pkcs5)=" + text + " " + text.length );
 
   var cipherText = Ecb.encrypt(text)
 
@@ -123,6 +123,10 @@ function javacrypt(text) {
 
 }
 
+
+/*
+ * Listen for postgreSQL notifies on reservations and command channel
+*/
 function doListen() {
   pg.connect(cstr,function (err,client,done) {
     if (err) {
@@ -172,6 +176,9 @@ function doListen() {
   });
 }
 
+/*
+ *  Set expired reservations
+ */
 
 function  doExpireReservations() {
  pg.connect(cstr,function (err,client,done) {
@@ -198,7 +205,9 @@ function  doExpireReservations() {
   });
 }
 
-
+/*
+ *  Update local image of current reservations
+ */
 
 function doUpdateCachePrenotazioni() {
  pg.connect(cstr,function (err,client,done) {
@@ -232,6 +241,11 @@ function doUpdateCachePrenotazioni() {
   });
 }
 
+
+/*
+ *  Update local image of current commands
+ */
+
 function doUpdateCacheComandi() {
  pg.connect(cstr,function (err,client,done) {
     if (err) {
@@ -264,6 +278,12 @@ function doUpdateCacheComandi() {
   });
 }
 
+
+
+/*
+ *  Check on local cache if there is a reservation
+ */
+
 function doCheckPrenotazioni(targa, extCallback) {
   if (cachePrenotazioni.hasOwnProperty(targa) && cachePrenotazioni[targa]==true)  {
      extCallback(null,{count : 1});
@@ -273,6 +293,9 @@ function doCheckPrenotazioni(targa, extCallback) {
 }
 
 
+/*
+ *  Check on local cache if there is a command
+ */
 
 function doCheckComandi(targa, extCallback) {
   if (cacheComandi.hasOwnProperty(targa) && cacheComandi[targa]==true)  {
@@ -283,6 +306,9 @@ function doCheckComandi(targa, extCallback) {
 }
 
 
+/*
+ *  Enqueue a beacon for further processing
+ */
 
 function enqueueBeacon(id, xsender, xpayload) {
   //console.log("JSON2 lenght=" + xpayload.length + xpayload );
@@ -301,6 +327,10 @@ function enqueueBeacon(id, xsender, xpayload) {
 }
 
 
+/*
+ *  Start worker stage
+ */
+
 function startDequeueBeacon() {
   console.log("Start dequeue");
   jkue.process('beacons', function (job,ctx,done) {
@@ -312,6 +342,9 @@ function startDequeueBeacon() {
   });
 }
 
+/*
+ *  Clean completed jobs fromq queue
+ */
 
 function doCleanQueue() {
   kue.Job.rangeByState( 'complete', 0, 1000, 'asc', function( err, jobs ) {
@@ -327,6 +360,10 @@ function doCleanQueue() {
 
 var prevQueueSize=Number.MAX_VALUE;
 
+
+/*
+ *  Sanity check of queue
+ */
 function doQueueCheck() {
   jkue.inactiveCount( function( err, total ) {
     //If queue size is > 1500 or from last checkpoint  is incresed, restart service
@@ -339,6 +376,10 @@ function doQueueCheck() {
 }
 
 
+
+/*
+ *  Process an UDP datagram
+ */
 
 function processDgram(msg,rinfo,server) {
 
@@ -368,6 +409,10 @@ function processDgram(msg,rinfo,server) {
 }
 
 
+/*
+ * Process a syncronous https request of reservations or commands presence
+ */
+
 function getNotifies(targa, cb) {
 
   if ( targa!=null  && targa.length>0 ) {
@@ -395,7 +440,6 @@ function getNotifies(targa, cb) {
            rmsg = JSON.stringify(robj);
 
 
-
            var emsg = javacrypt(rmsg);
 
            var rbuf = new Buffer(rmsg);
@@ -416,7 +460,7 @@ function getNotifies(targa, cb) {
 }
 
 
-
+// Create listener socket for udp4
 var server = dgram.createSocket('udp4');
 
 server.on('error',function(err) {
@@ -425,6 +469,7 @@ server.on('error',function(err) {
   server.close();
 });
 
+// Handle incoming udp message
 server.on('message', function(msg,rinfo) {
     var umsg;
     try {
@@ -433,8 +478,6 @@ server.on('message', function(msg,rinfo) {
       console.error(msg.toString(),ex);
       return;
     }
-    //console.log('!');
-    //console.log(msg.length,umsg.length,umsg.toString());
 
     processDgram(umsg.toString(),rinfo,server);
 });
@@ -447,29 +490,27 @@ server.on('listening', function() {
 
 
 
-
+// Create http server for requesting notifications and send beacon string
 
 var httpserver = http.createServer(function (req, res) {
 
   var url_parts = url.parse(req.url, true);
-
   var query = url_parts.query;
   var path = url_parts.pathname;
 
-
+  //Handle  http://...../notifies?plate=CARPLATE[&beaconText=......]
   if (path='/notifies' && query.plate) {
 
+      //Get pending notifications and send them back as response
       getNotifies(query.plate, function(body) {
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.end(body);
       });
 
+      //If there is a beacon string handle it
       if (query.beaconText) {
           console.log("*******************");
           enqueueBeacon(CountBeacon++,query.plate, query.beaconText);
-          if (query.plate=="CSDEMO04")
-            console.log("CSDEMO04 =" + query.beaconText);
-          //targa = beaconparser.process(query.beaconText);
       }
   } else {
       res.writeHead(404, {'Content-Type': 'text/plain'});
@@ -478,24 +519,27 @@ var httpserver = http.createServer(function (req, res) {
 
 });
 
-
+//Schedule cyclic processes
 setInterval(doUpdateCachePrenotazioni,60000);
 setInterval(doUpdateCacheComandi,60000);
 setInterval(doCleanQueue,60000);
 setInterval(doQueueCheck,15000);
 
-
+//Handle reservation expirations (actually done in other logic layer components)
 //setInterval(doExpireReservations,60000);
+
+//Execute immediatey a first run of cache updates and queue housekeeping
 doUpdateCachePrenotazioni();
 doUpdateCacheComandi();
 doCleanQueue();
 
+//Start worker dequeueing
 startDequeueBeacon();
 
+//Activate listiners
 server.bind(udpPort);
 startStats();
 doListen();
-
 httpserver.listen(httpPort,"0.0.0.0" , function() { console.log("HTTP listening on : "+ httpPort);});
 
 console.log("Running");

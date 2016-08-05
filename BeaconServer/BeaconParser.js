@@ -1,3 +1,10 @@
+/*
+ * In-process worker
+ *
+ */
+
+
+// Various libraries loading and initializers
 
 var logPath = '/var/log/services/';
 
@@ -26,6 +33,8 @@ var cstr = '';
 var mongoUrl = 'mongodb://localhost:27017/sharengo';
 var beaconid = 0;
 
+
+// Build an empty data container for beacons with minimal set of mandatory fields initialized with default values
 function getTemplate() {
    var  objTemplate = {
     VIN : 'nd',
@@ -51,6 +60,7 @@ function getTemplate() {
 }
 
 
+// Helper function for testin if a string is a valid JSON
 function IsJsonString(str) {
     try {
         JSON.parse(str);
@@ -60,17 +70,20 @@ function IsJsonString(str) {
     return true;
 }
 
+// Expose a function for explicitely initialize connections string
 exports.init = function(connstr) {
    cstr = connstr;
 }
 
+// Expose beacon processing entry point
 exports.process = function (json,job,done) {
 
-  //Ugly temp patch
+  //Ugly temp patch  for fixing some damaged json string, probably no mmore needed
   if (!IsJsonString(json)) {
     json += '"}';
   }
 
+   //Parse JSON string to js object
    var objJson;
    try {
     objJson = JSON.parse(json);
@@ -82,16 +95,21 @@ exports.process = function (json,job,done) {
 
    beaconid++;
 
-   //console.log(JSON.stringify(objTemplate));
+   //Merge it with empty template for coalescing eventual missing fields
    objTemplate = getTemplate();
    var obj =  merge(objTemplate,objJson);
 
+   //Trap for dumping specific beacons
    if (obj.VIN=='CSDEMO04')
     console.log('CSDEMO04:' + json + '----' + JSON.stringify(obj));
 
+   // append raw json string to object
    obj.json = json;
+
+   // Round speed value for matching db schema
    obj.Speed =  Math.floor(obj.Speed);
 
+   //If there is a gps_info field verify that is a valid json otherwise set to null
    if (obj.gps_info!=null) {
        if (!IsJsonString(obj.gps_info)) {
            console.log("Invalid gps_info JSON: " + obj.gps_info);
@@ -100,6 +118,7 @@ exports.process = function (json,job,done) {
        }
    }
 
+   //If there is a detail field verify that is a valid json otherwise set to null
    if (obj.detail!=null) {
        if (!IsJsonString(obj.detail)) {
            console.log("Invalid detail JSON: " + obj.detail);
@@ -108,37 +127,32 @@ exports.process = function (json,job,done) {
        }
    }
 
-/*
-    $i2c  = isset ($data['i2c']) ? $data['i2c'] : null;
-        $uptime = isset ($data['uptime']) ? $data['uptime'] : 0;
-        $chiudibile = isset ($data['chiudibile']) ? ($data['chiudibile']?1:0) : 1;
-        $parkenabled = isset($data['parkenabled']) ? ($data['parkenabled']?1:0) : 1;
-		$gspeed = round($gspeed);
-        $gps_info = isset($data['gps_info'])?$data['gps_info']:NULL;
-*/
 
    targa = obj.id;
 
+   // Log to job entry
    if (job)  job.log("Begin async");
 
+   //Start parallel prcessing
    async.parallel(
       [
          function(callback) {
             if (job)  job.log("Begin updateCar");
-            updateCar(callback,obj,beaconid,job);
+            updateCar(callback,obj,beaconid,job);   // Update row in table "cars"
          },
          function(callback) {
-           updateCarInfo(callback,obj,beaconid,job);
+            if (job)  job.log("Begin updateCarInfo");
+            updateCarInfo(callback,obj,beaconid,job);  // Update row in table "carInfo"
          } ,
 /*
          function(callback) {
             if (job)  job.log("Begin writeLog");
-            writeLog(callback,obj,beaconid,job);
+            writeLog(callback,obj,beaconid,job);   //Write log to postgreSQL table "logs"
          },
 */
          function(callback) {
             if (job)  job.log("Begin writeMongoLog");
-           writeMongoLog(callback,obj,beaconid,job);
+            writeMongoLog(callback,obj,beaconid,job);  //Write log to mongoDB collection "logs"
          }
       ],
       function(err, result) {
@@ -146,13 +160,13 @@ exports.process = function (json,job,done) {
             job.log("End Async");
             console.log("++End Async JOB " + job.id);
         }
+
         if (done)
             done();
 
-
         if (err) {
-            console.error("Async.parallel:",err);
-            log.error("Async.parallel:",err);
+          console.error("Async.parallel:",err);
+          log.error("Async.parallel:",err);
         } else {
           console.log(result);
           log.debug(result);
@@ -167,7 +181,7 @@ exports.process = function (json,job,done) {
 
 function pgExecute(callback,sql,obj,job) {
 
-   pg.connect(cstr, function (err, client, done) {
+   pg.connect(cstr,\ function (err, client, done) {
 
          if (err) {
             console.error('Connect error', err);
@@ -185,7 +199,8 @@ function pgExecute(callback,sql,obj,job) {
                   callback(new Error(obj.VIN ,'Update car error:' + err))
                   return;
                }
-            });
+         });
+
          if (query)
            query.on('end', function(result) {
                  if (job)  job.log("UpdateCar done");
@@ -377,7 +392,6 @@ function updateCar(callback,obj,id,job) {
        //sql2 = updateCarInfo(obj);
    }
 
-
    if (obj.hasOwnProperty('fwVer'))
        fields +=", firmware_version=:fwVer ";
 
@@ -403,15 +417,8 @@ function updateCar(callback,obj,id,job) {
         fields += ', plug=:PPStatus';
 
 
-
    var sql = "UPDATE cars SET " + fields + " WHERE plate =:VIN;" + sql2;
 
-
-
-   if (obj.VIN == 'CSDEMO01') {
-      //console.log(obj);
-      //console.log(sql);
-   }
 
    pgExecute(callback,sql,obj,job);
 
@@ -481,7 +488,7 @@ function writeLog(callback,obj,id,job) {
 function writeMongoLog(callback,obj,id,job) {
 
         log.debug(obj.VIN, id, "Begin mongo writelog");
-        
+
         MongoClient.connect(mongoUrl, function(err, db) {
           if (err) {
             console.error(obj.VIN,'Mongo connect error',err)
