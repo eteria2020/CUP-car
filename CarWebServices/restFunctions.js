@@ -1,4 +1,4 @@
-
+var crypto = require('crypto');
 
 module.exports = init
 
@@ -82,12 +82,15 @@ function init (opt) {
                 var auth = localParseAuth(req);
 
                 query = " SELECT * FROM cars_configurations " +
-                        " WHERE car_plate=$1 OR fleet_id= (SELECT fleet_id FROM cars WHERE plate='CSDEMO01') " +
+                        " WHERE car_plate=$1 OR fleet_id= (SELECT fleet_id FROM cars WHERE plate=$1) " +
                         " OR (fleet_id is null AND model is null AND car_plate is null) " +
                         " ORDER BY key, car_plate DESC , model DESC, fleet_id DESC ";
-                params = [auth.username];
-
-		        client.query(
+                if(typeof  req.params.car_plate === 'undefined')
+                    params = [auth.username];
+                else
+                    params = [req.params.car_plate];
+              
+			client.query(
 		        	query,
 		        	params,
 		        	function(err, result) {
@@ -142,6 +145,7 @@ function init (opt) {
                           "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as info_display,"+
                           "substring(md5(cast(pin->'primary' as text)) for 8) as pin,"+
                           "'' as pin2,"+
+            			  "pin as pins,"+
                           "card_code as codice_card,"+
                           "update_id  as tms "+
                         " FROM customers  "+
@@ -165,6 +169,14 @@ function init (opt) {
     			            var outTxt = '',outJson = '[]';
                             var configs = {};
     			            if((typeof result !== 'undefined')){
+     			              result.rows.forEach(function(item) {
+     			                // For each row compute hash for each pin in JSON structure
+     			                Object.keys(item.pins).forEach(function(key) {
+                                  var pin = ""+item.pins[key];
+                                  item.pins[key] = crypto.createHash('md5').update(pin).digest("hex").substring(0,8);
+     			                });
+    			              });
+
     			              outJson=JSON.stringify(result.rows);
     			            }
                             res.header('content-type', 'application/json');

@@ -1,6 +1,12 @@
 // Create MomentJS Module
 const moment = require("moment");
 
+// Catching Process Mode ( development/debug | production )
+var mode = (typeof process.env.DEBUG === "undefined" || process.env.DEBUG === false) ? "production" : "development";
+
+// Include SiteLinks from local configurations
+const siteLinks = require("./config.local.js").siteLinks;
+
 class GenericMessage {
     constructor() {
         this._id = null;
@@ -242,12 +248,12 @@ class SOSMessage extends GenericMessage {
             "\n" +
             "\nDate: " + this.eventTime.format("YYYY-MM-DD HH:mm Z") +
             "\nCustomer: " + this.customer.name + " " + this.customer.surname +
-            "\nCustomer ID: <a href=\"http://admin.sharengo.it/customers/edit/" + this.customer.id + "\">" + this.customer.id + "</a>" +
-            "\nTrip ID: <a href=\"http://admin.sharengo.it/trips/details/" + this.trip.id + "\">" + this.trip.id + "</a>" +
+            "\nCustomer ID: <a href=\"" + siteLinks.customerDetails + this.customer.id + "\">" + this.customer.id + "</a>" +
+            "\nTrip ID: <a href=\"" + siteLinks.tripDetails + this.trip.id + "\">" + this.trip.id + "</a>" +
             "\nGiven Number: " + this.givenPhoneNumber +
             "\nCar Plate: " + this.car.plate +
-            "\nPosition: <a ng-href=\"https://maps.google.com/?q=" + this.geo.latitude + "," + this.geo.longitude + "\" target=\"_blank\" href=\"https://maps.google.com/?q=" + this.geo.latitude + "," + this.geo.longitude + "\">Open Google Map</a>" +
-            "\nMore Details: <a href=\"http://admin.sharengo.it/notifications/details/" + this.id + "\">Admin Page</a>";
+            "\nPosition: <a ng-href=\"https://maps.google.com/?q=" + this.latitude + "," + this.longitude + "\" target=\"_blank\" href=\"https://maps.google.com/?q=" + this.latitude + "," + this.longitude + "\">Open Google Maps</a>" +
+            "\nMore Details: <a href=\"" + siteLinks.messageDetails + this.id + "\">Admin Page</a>";
     }
 }
 

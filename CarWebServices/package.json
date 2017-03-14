@@ -23,6 +23,7 @@
     "pg": "^4.4.4",
     "pg-native": "^1.10.0",
     "restify": "^4.0.3",
-    "validator": "^4.5.2"
+    "validator": "^4.5.2",
+    "crypto" : "^0.0.3"
   }
 }

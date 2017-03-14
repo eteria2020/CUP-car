@@ -25,6 +25,13 @@ exports.globalConfigFilePath = "../config/globalConfig";
 exports.telegramTokeId = "";
 exports.telegramPrivateGroupID = 0;
 
+// Site
+exports.siteLinks = {
+  "customerDetails": "http://something.domain/customers/details/",
+  "tripDetails": "http://something.domain/trips/details/",
+  "messageDetails": "http://something.domain/notifications/details/"
+};
+
 // DEBUG
 exports.debugMode = process.env.DEBUG === "true" || process.env.DEBUG === "1" || false;
 exports.debugDockerMode = process.env.DOCKERDEBUG === "true" || process.env.DOCKERDEBUG === "1" || false;

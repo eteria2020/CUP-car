@@ -1,8 +1,7 @@
 // db
 exports.pgDb = "postgres://sharengo:gmjk51pa@127.0.0.1/sharengo";
-exports.redisDb = "dm-1:6379";
-exports.redisCluster =   [{host: 'dm-1', port: 26379},{host: 'dm-2', port: 26379},{host: 'dm-3', port: 26379}];
-exports.redisSentinels =  { sentinels: [{host: 'dm-1', port: 26379},{host: 'dm-2', port: 26379},{host: 'dm-3', port: 26379}],
-                            name : 'dm-1' };
+exports.redisDb = "127.0.0.1:6379";
+exports.redisCluster =   [{host: '127.0.0.1', port: 26379}];
+exports.redisSentinels =  { sentinels: [{host: '127.0.0.1', port: 26379}],  name : 'localhost' };
 exports.logPath = "/var/log/services/";
 
