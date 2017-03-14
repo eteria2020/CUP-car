@@ -4,3 +4,6 @@
 
 # Node Dependecies
 **/node_modules
+
+# SSL Certificates
+/ssl
