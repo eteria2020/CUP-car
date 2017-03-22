@@ -189,6 +189,41 @@ function init (opt) {
         return next();
 	},
 
+         /**
+          * get list of businesses
+          * @param req
+          * @param res
+          * @param next
+          */
+         getBusinessEmployees: function (req, res, next) {
+             pg.connect(conString, function (err, client, done) {
+
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return next(false);
+                 }
+
+                 var query = "SELECT " +
+                 "employee_id as id, business_code as codice_azienda, business.is_enabled as azienda_abilitata, time_limits as limite_orari " +
+                 "FROM business.business_employee JOIN business.business ON (business_code = code) " +
+                 "WHERE status = 'approved'";
+                 client.query(
+                     query,
+                     [],
+                     function (err, result) {
+                         if (pgError(err, client)) {
+                             responseError(res, err);
+                         } else {
+                             done();
+                             res.header('content-type', 'application/json');
+                             res.send(200, result.rows);
+                         }
+                     }
+                 );
+             });
+             return next();
+         },
+
 /* / GET */
 
 /* POST */
