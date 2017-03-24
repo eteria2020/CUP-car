@@ -116,78 +116,75 @@ function init (opt) {
 	},
 
 
+         /**
+          * get pois
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getWhitelist: function (req, res, next) {
+             //if(sanitizeInput(req,res)){
+             pg.connect(conString, function (err, client, done) {
 
-	/**
-	 * get pois
-	 * @param  array   req  request
-	 * @param  array   res  response
-	 * @param  function next handler
-	 */
-	getWhitelist: function(req, res, next) {
-		//if(sanitizeInput(req,res)){
-			pg.connect(conString, function(err, client, done) {
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return next(false);
+                 }
 
-                if (pgError(err,client)) {
-                   responseError(res,err);
-                   return next(false);
-                }
+                 var query =
+                     "SELECT " +
+                     "id," +
+                     "name as nome," +
+                     "surname as cognome," +
+                     "language as lingua," +
+                     "mobile as cellulare ," +
+                     "enabled as abilitato," +
+                     "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as info_display," +
+                     "substring(md5(cast(pin->'primary' as text)) for 8) as pin," +
+                     "'' as pin2," +
+                     "pin as pins," +
+                     "card_code as codice_card," +
+                     "update_id  as tms " +
+                     " FROM customers  " +
+                     " WHERE update_id > $1 " +
+                     " ORDER BY update_id " +
+                     " LIMIT 10000";
 
-		        var query = '',params = [],queryString = '',isSingle = false;
+                 var params = [];
+                 if (typeof  req.params.lastupdate === 'undefined')
+                     params = [0];
+                 else
+                     params = [req.params.lastupdate];
 
-                query =
-                       "SELECT "+
-                          "id,"+
-                          "name as nome,"+
-                          "surname as cognome,"+
-                          "language as lingua,"+
-                          "mobile as cellulare ,"+
-                          "enabled as abilitato,"+
-                          "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as info_display,"+
-                          "substring(md5(cast(pin->'primary' as text)) for 8) as pin,"+
-                          "'' as pin2,"+
-            			  "pin as pins,"+
-                          "card_code as codice_card,"+
-                          "update_id  as tms "+
-                        " FROM customers  "+
-                        " WHERE update_id > $1 " +
-                        " ORDER BY update_id " +
-                        " LIMIT 10000";
-
-                if(typeof  req.params.lastupdate === 'undefined')
-                    params = [0];
-                else
-                    params = [req.params.lastupdate];
-
-		        client.query(
-		        	query,
-		        	params,
-		        	function(err, result) {
-                        if (pgError(err,client)) {
-                            responseError(res,err);
-  		        	    } else {
-    			            done();
-    			            var outTxt = '',outJson = '[]';
-                            var configs = {};
-    			            if((typeof result !== 'undefined')){
-     			              result.rows.forEach(function(item) {
-     			                // For each row compute hash for each pin in JSON structure
-     			                Object.keys(item.pins).forEach(function(key) {
-                                  var pin = ""+item.pins[key];
-                                  item.pins[key] = crypto.createHash('md5').update(pin).digest("hex").substring(0,8);
-     			                });
-    			              });
-
-    			              outJson=JSON.stringify(result.rows);
-    			            }
-                            res.header('content-type', 'application/json');
-                            res.send(200,result.rows);
-                        }
-		        	}
-		        );
-		    });
-		//}
-        return next();
-	},
+                 client.query(
+                     query,
+                     params,
+                     function (err, result) {
+                         if (pgError(err, client)) {
+                             responseError(res, err);
+                         } else {
+                             done();
+                             if (typeof result !== 'undefined') {
+                                 result.rows.forEach(function (item) {
+                                     // For each row compute hash for each possible pin
+                                     var a = ["primary", "secondary", "company"];
+                                     a.forEach(function (key) {
+                                         if (item.pins[key]) {
+                                             var pin = "" + item.pins[key];
+                                             item.pins[key] = crypto.createHash('md5').update(pin).digest("hex").substring(0, 8);
+                                         }
+                                     });
+                                 });
+                             }
+                             res.header('content-type', 'application/json');
+                             res.send(200, result.rows);
+                         }
+                     }
+                 );
+             });
+             //}
+             return next();
+         },
 
          /**
           * get list of businesses
@@ -204,9 +201,9 @@ function init (opt) {
                  }
 
                  var query = "SELECT " +
-                 "employee_id as id, business_code as codice_azienda, business.is_enabled as azienda_abilitata, time_limits as limite_orari " +
-                 "FROM business.business_employee JOIN business.business ON (business_code = code) " +
-                 "WHERE status = 'approved'";
+                     "employee_id as id, business_code as codice_azienda, business.is_enabled as azienda_abilitata, time_limits as limite_orari " +
+                     "FROM business.business_employee JOIN business.business ON (business_code = code) " +
+                     "WHERE status = 'approved'";
                  client.query(
                      query,
                      [],
