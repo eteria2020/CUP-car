@@ -12,6 +12,7 @@ var cluster =   require('cluster');
 // Configurations
 var config = require('./config');
 var globalConfig = require('../config/globalConfig');
+var redisCluster =      globalConfig.redisCluster || [];
 
 
 
@@ -437,7 +438,7 @@ function getNotifies(targa, cb) {
             robj.reservations =  results.queryPrenotazioni.count;
 
 
-           rmsg = JSON.stringify(robj);
+           var rmsg = JSON.stringify(robj);
 
 
            var emsg = javacrypt(rmsg);

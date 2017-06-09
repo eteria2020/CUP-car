@@ -1,0 +1,23 @@
+{
+  "apps" : [{
+      "name"	: "BeaconServer",
+      "script"	: "BeaconServer.js",
+      "node_args"	: [],
+	  "merge_logs" : true,
+      "log_date_format"  : "DD/MM/YYYY HH:mm Z",
+	  "error_file" : "/var/log/services/BeaconServer_error.log",
+	  "out_file" : "/var/log/services/BeaconServer_out.log",
+      "instances"   : 4,
+      "autorestart" : true,
+
+      "env": {
+	"DEBUG" : false
+      },
+
+      "env_debug" : {
+        "DEBUG" : false
+      }
+
+  }]
+
+}
