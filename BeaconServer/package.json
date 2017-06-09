@@ -18,12 +18,15 @@
   "author": "Massimo Belluz",
   "license": "unlicensed",
   "dependencies": {
-    "console-stamp": "^0.2.0",
-    "kue": "^0.10.5",
-    "mcrypt": "^0.10.9",
     "async": "",
     "blueimp-md5": "",
+    "bunyan": "^1.4.0",
+    "console-stamp": "^0.2.0",
+    "kue": "^0.10.5",
+    "mcrypt": "^0.1.12",
+    "mongodb": "^2.2.28",
     "pg": "^4.4.4",
-    "pg-native": "^1.10.0"
+    "pg-native": "^1.10.0",
+    "pg-spice": "^2.0.1"
   }
 }

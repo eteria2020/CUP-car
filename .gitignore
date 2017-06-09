@@ -3,7 +3,7 @@
 .vscode
 
 # Node Dependecies
-**/node_modules
+#**/node_modules
 
 # SSL Certificates
 /ssl

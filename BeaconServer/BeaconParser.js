@@ -181,7 +181,7 @@ exports.process = function (json,job,done) {
 
 function pgExecute(callback,sql,obj,job) {
 
-   pg.connect(cstr,\ function (err, client, done) {
+   pg.connect(cstr, function (err, client, done) {
 
          if (err) {
             console.error('Connect error', err);
