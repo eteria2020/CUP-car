@@ -1,0 +1,14 @@
+exports.debugMode = process.env.DEBUG=='true' || process.env.DEBUG=='1' || false;
+exports.udpPort =  udpPort;
+exports.httpPort =  httpPort;
+exports.webPort =  webPort;
+exports.logPath = "/path/to/log/";
+exports.serverName = "Server Name";
+
+if (exports.debugMode) {
+  console.log("DebugMode active");
+  exports.udpPort += 10000;
+  exports.httpPort +=  10000;
+  exports.httpUnsecurePort +=  10000;
+  exports.logPath += "debug/";
+}

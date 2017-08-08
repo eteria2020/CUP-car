@@ -7,3 +7,7 @@
 
 # SSL Certificates
 /ssl
+
+# Config File
+#config.js
+#globalConfig.js
