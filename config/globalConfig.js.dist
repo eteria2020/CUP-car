@@ -1,0 +1,8 @@
+// db
+exports.pgDb = "postgres://username:password@serverIP/DBname";
+exports.redisDb = "redisDBIP:redisDbPort";
+exports.redisCluster =   [{host: 'redisClusterIP', port: redisClusterPort}];
+exports.redisSentinels =  { sentinels: [{host: 'redisSentinelsIP', port: redisSentinelsPort}],  name : 'redisSentinelName' };
+exports.logPath = "/path/to/log/";
+exports.conString = 'postgres://username:password@serverIP/DBname';
+
