@@ -1,10 +1,8 @@
 // db
-exports.pgDb = "postgres://username:password@ServerIP/DBName";
 exports.debugMode = process.env.DEBUG=='true' || process.env.DEBUG=='1' || false;
 exports.inSockPort = inSockPort;   //Internal port for services connection
 exports.outSockPort = outSockPort;  //External port for vehicles
 exports.redisDb =  redisDbNumber;
-exports.logPath = "/path/to/log/";
 exports.serverName = "serverName";
 
 if (exports.debugMode) {
