@@ -1,6 +1,8 @@
 // db
 exports.pgDb = "postgres://username:password@serverIP/DBname";
-exports.redisDb = "redisDBIP:redisDbPort";
+exports.mongoUrl = 'mongodb://serverIP:Port/DBname';
+exports.zmqRouterUrl = 'tcp://ZMQIP:ZMQPort';
+exports.redisDb = "redis://serverIP:serverPort/DatabaseNumber";
 exports.redisCluster =   [{host: 'redisClusterIP', port: redisClusterPort}];
 exports.redisSentinels =  { sentinels: [{host: 'redisSentinelsIP', port: redisSentinelsPort}],  name : 'redisSentinelName' };
 exports.logPath = "/path/to/log/";

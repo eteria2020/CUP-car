@@ -20,7 +20,7 @@
   "dependencies": {
     "async": "",
     "blueimp-md5": "",
-    "bunyan": "^1.4.0",
+    "bunyan": "1.4.0",
     "console-stamp": "^0.2.0",
     "kue": "^0.10.5",
     "mcrypt": "^0.1.12",

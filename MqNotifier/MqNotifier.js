@@ -1,13 +1,19 @@
+try {
+    var globalConfig = require('../config/globalConfig');
+}   catch(ex) {
+    console.warn("Missing or invalid ../config/globalConfig.js");
+    var globalConfig = {};
+}
 
-var logPath = '/var/log/services/';
-var zmqRouterUrl = 'tcp://127.0.0.1:8000';
+var logPath =  globalConfig.logPath;
+var zmqRouterUrl =  globalConfig.zmqRouterUrl;
 
 var zmq = require('zmq');
 
 var pg = require('pg');
 require('pg-spice').patch(pg);
 
-var cstr = 'postgres://sharengo:gmjk51pa@localhost:5433/sharengo';
+var cstr = globalConfig.pgDb;
 
 var bunyan = require('bunyan');
 
