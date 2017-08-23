@@ -7,9 +7,9 @@ exports.logPath = "/path/to/log/";
 exports.serverName = "serverName";
 
 if (exports.debugMode) {
-  console.log("DebugMode active");
-  exports.httpPort +=  10000;
-  exports.httpUnsecurePort +=  10000;
-  exports.logPath += "debug/";
+    console.log("DebugMode active");
+    exports.httpPort +=  10000;
+    exports.httpUnsecurePort +=  10000;
+    exports.logPath += "debug/";
 }
 
