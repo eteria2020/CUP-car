@@ -4,7 +4,7 @@
 
 # Node Dependecies
 **/node_modules
-
+**/package-lock.json
 # SSL Certificates
 /ssl
 
