@@ -27,7 +27,7 @@ var debug=true;
 var withZap=false;
 var withCrypto=true;
 var withSegfaultHandler=false;
-var withRRD=true;
+var withRRD=false;
 var withRedis=true;
 var withProcMonitor=true;
 
