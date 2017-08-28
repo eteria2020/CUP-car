@@ -211,12 +211,15 @@ function registerServer(server) {
 		funcs.getConfigs
 	);
 
-        server.get(
+	server.get(
         {path: '/whitelist', version: '1.0.0'},
 		funcs.getWhitelist
 	);
 
-
+    server.get(
+        {path: '/business-employees', version: '1.0.0'},
+        funcs.getBusinessEmployees
+    );
 }
 
 

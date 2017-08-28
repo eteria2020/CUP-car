@@ -19,12 +19,13 @@
   "license": "unlicensed",
   "dependencies": {
     "console-stamp": "^0.2.0",
-    "bunyan": "",
-    "crypto": "",
-    "ioredis": "",
-    "rrd" : "",
-    "zmq" : "",
-    "z85":"",
-    "zmq-zap":""
+    "bunyan": "1.4.0",
+    "crypto": "0.0.3",
+    "ioredis": "3.1.1",
+    "rrd" : "1.0.1",
+    "zmq" : "2.15.3",
+    "z85":"0.0.2",
+    "zmq-zap":"0.0.2",
+    "pidusage":"1.0.1"
   }
 }

@@ -3,7 +3,11 @@
 .vscode
 
 # Node Dependecies
-#**/node_modules
-
+**/node_modules
+**/package-lock.json
 # SSL Certificates
 /ssl
+
+# Config File
+config.js
+globalConfig.js

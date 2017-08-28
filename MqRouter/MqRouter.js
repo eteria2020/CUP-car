@@ -1,9 +1,3 @@
-
-
-// Basic modules
-var stamp =     require('console-stamp')(console, 'dd/mm/yyyy HH:MM:ss.l');
-
-
 // Configurations
 try {
     var config = require('./config');
@@ -20,22 +14,24 @@ try {
     var globalConfig = {};
 }
 
-var inSockPort =        config.inSockPort || 8000;
-var outSockPort =       config.outSockPort || 8001;
-var redisServer =       config.redisServer || globalConfig.redisServer;
-var redisDb =           config.redisDb;
-var logPath =           config.logPath || globalConfig.logPath;
-var debug =             config.debugMode || false;
+//Porta socket rivolto verso server
+var inSockPort = config.inSockPort || 8000;
+
+//Porta socket rivolto verso tablet
+var outSockPort = config.outSockPort || 8001;
 
 
+var cstrRedis = globalConfig.redisDb;
 
-
+var debug=true;
 var withZap=false;
 var withCrypto=true;
 var withSegfaultHandler=false;
 var withRRD=false;
-var withRedis=false;
+var withRedis=true;
+var withProcMonitor=true;
 
+var logPath = globalConfig.logPath;
 
 var bunyan = require('bunyan');
 var log = bunyan.createLogger({
@@ -72,12 +68,17 @@ if (withCrypto) {
 
 if (withRedis) {
     var Redis = require('ioredis');
-    var redis = new Redis('redis://127.0.0.1:6379/1');
+    var redis = new Redis(cstrRedis);
 }
 
 
 if (withRRD) {
   var rrd = require('rrd')
+}
+
+if (withProcMonitor) {
+  var pstat = require('pidusage');
+  var cpuAlarms = 0;
 }
 
 //Inizializza  zeroMQ
@@ -265,6 +266,32 @@ function handleTabletToServer(data) {
 }
 
 
+function CheckCpuLimit() {
+  if (pstat) {
+    pstat.stat(process.pid, function(err,stat) {
+
+       if (stat.cpu>75) {
+           cpuAlarms++;
+       } else {
+           cpuAlarms=0;
+       }
+       log.info("CPU="+stat.cpu+" Alarms=" + cpuAlarms);
+
+       if (cpuAlarms > 3) {
+         log.error("CPU alarms limit reached. Restarting");
+         process.exit(0);
+       }
+
+    });
+  }
+}
+
+function startCheckCpu() {
+  console.log("Starting Check CPU");
+  log.info("Starting Check CPU");
+  setInterval(CheckCpuLimit, 10000);
+}
+
 function startListen() {
 
   inSock = zmq.socket('xsub');
@@ -304,6 +331,10 @@ if (withZap)
 if (withRRD) {
     initRRD();
     startRRD();
+}
+
+if (withProcMonitor) {
+  startCheckCpu();
 }
 
 if (withCrypto) {
