@@ -113,7 +113,7 @@ function javacrypt(text) {
 
 }
 
-function doListen() {
+/*function doListen() {
   pg.connect(cstr,function (err,client,done) {
     if (err) {
       console.error('Connect error',err);
@@ -160,10 +160,10 @@ function doListen() {
 
 
   });
-}
+}*/
 
 
-function  doExpireReservations() {
+/*function  doExpireReservations() {
  pg.connect(cstr,function (err,client,done) {
     if (err) {
       console.error('Connect error',err);
@@ -186,11 +186,11 @@ function  doExpireReservations() {
 
 
   });
-}
+}*/
 
 
 
-function doUpdateCachePrenotazioni() {
+/*function doUpdateCachePrenotazioni() {
  pg.connect(cstr,function (err,client,done) {
     if (err) {
       console.error('Connect error',err);
@@ -220,9 +220,9 @@ function doUpdateCachePrenotazioni() {
 
 
   });
-}
+}*/
 
-function doUpdateCacheComandi() {
+/*function doUpdateCacheComandi() {
  pg.connect(cstr,function (err,client,done) {
     if (err) {
       console.error('Connect error',err);
@@ -252,25 +252,25 @@ function doUpdateCacheComandi() {
 
 
   });
-}
+}*/
 
-function doCheckPrenotazioni(targa, extCallback) {
+/*function doCheckPrenotazioni(targa, extCallback) {
   if (cachePrenotazioni.hasOwnProperty(targa) && cachePrenotazioni[targa]==true)  {
      extCallback(null,{count : 1});
   } else {
      extCallback(null, {count : 0});
   }
-}
+}*/
 
 
 
-function doCheckComandi(targa, extCallback) {
+/*function doCheckComandi(targa, extCallback) {
   if (cacheComandi.hasOwnProperty(targa) && cacheComandi[targa]==true)  {
      extCallback(null,{count : 1});
   } else {
      extCallback(null,{count : 0});
   }
-}
+}*/
 
 
 
@@ -383,7 +383,7 @@ function processDgram(msg,rinfo,server) {
 
 function getNotifies(targa, cb) {
 
-  if ( targa!=null  && targa.length>0 ) {
+  /*if ( targa!=null  && targa.length>0 ) {
        var logstr = targa;
        async.auto({
          queryPrenotazioni: function(callback) {
@@ -424,7 +424,10 @@ function getNotifies(targa, cb) {
        });
 
 
-  }
+  }*/
+  var robj = {};
+  rmsg = JSON.stringify(robj);
+  cb(rmsg);
 
 }
 
@@ -497,23 +500,23 @@ doCleanQueueFailed();
 //doCleanQueueInactive();
 
 setInterval(doCleanQueueFailed,60000);
-setInterval(doUpdateCachePrenotazioni,60000);
-setInterval(doUpdateCacheComandi,60000);
+//setInterval(doUpdateCachePrenotazioni,60000);
+//setInterval(doUpdateCacheComandi,60000);
 setInterval(doCleanQueue,60000);
 setInterval(doQueueCheck,15000);
 
 
 
 //setInterval(doExpireReservations,60000);
-doUpdateCachePrenotazioni();
-doUpdateCacheComandi();
+//doUpdateCachePrenotazioni();
+//doUpdateCacheComandi();
 doCleanQueue();
 
 startDequeueBeacon();
 
 server.bind(udpPort);
 startStats();
-doListen();
+//doListen();
 
 httpserver.listen(httpPort,"0.0.0.0" , function() { console.log("HTTP listening on : "+ httpPort);});
 
