@@ -148,7 +148,7 @@ function init (opt) {
                      " FROM customers  " +
                      " WHERE update_id > $1 " +
                      " ORDER BY update_id " +
-                     " LIMIT 10000";
+                     " LIMIT 5000";
 
                  var params = [];
                  if (typeof  req.params.lastupdate === 'undefined')
