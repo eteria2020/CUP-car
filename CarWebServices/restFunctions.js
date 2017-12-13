@@ -149,7 +149,7 @@ function init(opt) {
                     "surname as c," +
                     "mobile as t," +
                     "enabled as a," +
-                    "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as i_d," +
+                    "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as id," +
                     "pin->'primary' as pin," +
                     "card_code as cd," +
                     "update_id  as tm" +
