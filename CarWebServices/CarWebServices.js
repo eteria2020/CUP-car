@@ -215,6 +215,9 @@ function registerServer(server) {
         {path: '/whitelist', version: '1.0.0'},
 		funcs.getWhitelist
 	);
+  server.get({ path: '/whitelist2', version: '1.0.0' },
+      funcs.getWhitelist2
+  );
 
     server.get(
         {path: '/business-employees', version: '1.0.0'},
@@ -321,7 +324,3 @@ function registerServer(server) {
 
     dlog.d("Worker started...");
 //}
-
-
-
-

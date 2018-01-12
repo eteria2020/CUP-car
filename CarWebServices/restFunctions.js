@@ -89,7 +89,7 @@ function init (opt) {
                     params = [auth.username];
                 else
                     params = [req.params.car_plate];
-              
+
 			client.query(
 		        	query,
 		        	params,
@@ -187,6 +187,74 @@ function init (opt) {
          },
 
          /**
+          * get pois
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getWhitelist2: function(req, res, next) {
+             //if(sanitizeInput(req,res)){
+             pg.connect(conString, function(err, client, done) {
+
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return next(false);
+                 }
+
+                 var query =
+                     "SELECT " +
+                     "id as i," +
+                     "name as n," +
+                     "surname as c," +
+                     "mobile as t ," +
+                     "enabled as a," +
+                     "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as id," + // infoDisplay
+                     "substring(md5(cast(pin->'primary' as text)) for 8) as p," +
+                     "pin as ps," +
+                     "card_code as cc," +
+                     "update_id  as tm " +
+                     " FROM customers  " +
+                     " WHERE update_id > $1 " +
+                     " ORDER BY update_id " +
+                     " LIMIT 10000";
+
+                 var params = [];
+                 if (typeof req.params.lastupdate === 'undefined')
+                     params = [0];
+                 else
+                     params = [req.params.lastupdate];
+
+                 client.query(
+                     query,
+                     params,
+                     function(err, result) {
+                         if (pgError(err, client)) {
+                             responseError(res, err);
+                         } else {
+                             done();
+                             if (typeof result !== 'undefined') {
+                                 result.rows.forEach(function(item) {
+                                     // For each row compute hash for each possible pin
+                                     var a = ["primary", "secondary", "company"];
+                                     a.forEach(function(key) {
+                                         if (item.ps[key]) {
+                                             var p = "" + item.ps[key];
+                                             item.ps[key] = crypto.createHash('md5').update(p).digest("hex").substring(0, 8);
+                                         }
+                                     });
+                                 });
+                             }
+                             res.header('content-type', 'application/json');
+                             res.send(200, result.rows);
+                         }
+                     }
+                 );
+             });
+             //}
+             return next();
+         },
+
+         /**
           * get list of businesses
           * @param req
           * @param res
@@ -248,13 +316,13 @@ function init (opt) {
 
 		        	client.query(
 			        	"SELECT EXISTS(SELECT plate FROM cars WHERE plate=$1)",
-			        	[req.params.plate], 
+			        	[req.params.plate],
 			        	function(err, result) {
 				            done();
 				            if(result.rows[0].exists){
 			            		client.query(
-						        	"SELECT EXISTS(SELECT car_plate FROM reservations WHERE (customer_id=$1 OR car_plate=$2) AND active IS TRUE)", 
-						        	[req.user.id,req.params.plate], 
+						        	"SELECT EXISTS(SELECT car_plate FROM reservations WHERE (customer_id=$1 OR car_plate=$2) AND active IS TRUE)",
+						        	[req.user.id,req.params.plate],
 						        	function(err, result) {
 							            done();
 							            logError(err,err);
@@ -262,8 +330,8 @@ function init (opt) {
 				            				sendOutJSON(res,200,'Error: Only 1 reservation allowed',null);
 							            }else{
 									        client.query(
-									        	"INSERT INTO reservations (ts,car_plate,customer_id,beginning_ts,active,length,to_send) VALUES (NOW(),$1,$2,NOW(),true,30,true) RETURNING id", 
-									        	[req.params.plate,req.user.id], 
+									        	"INSERT INTO reservations (ts,car_plate,customer_id,beginning_ts,active,length,to_send) VALUES (NOW(),$1,$2,NOW(),true,30,true) RETURNING id",
+									        	[req.params.plate,req.user.id],
 									        	function(err, result) {
 										            done();
 										            logError(err,err);
@@ -271,14 +339,14 @@ function init (opt) {
 
 									        	}
 									        );
-							            }							           
+							            }
 						        	}
 						        );
 				            }else{
 				            	logError(err,err);
 				            	sendOutJSON(res,200,'Invalid car plate',null);
 				            }
-				           
+
 			        	}
 			        );
 			    }else{
@@ -321,7 +389,7 @@ function init (opt) {
 	 * outputs json response
 	 * @param  array   req  request
 	 * @param  array   res  response
-	 * @param  string reason 
+	 * @param  string reason
 	 * @param  array data   data to send
 	 */
 	function sendOutJSON(res,status,reason,data){
