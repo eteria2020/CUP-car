@@ -43,13 +43,12 @@ function getTemplate() {
     KeyStatus : null,
 	HbVer : 'nd',
 	swVer : 'nd',
-	log_tx_time : 0,
+	log_tx_time : new Date(0),
 	charging : false,
 	GPS : 'ND',
 	PPStatus : false,
 	ReadyOn : false,
 	batterySafety : true,
-	log_time : 0,
 	offLineTrips : 0,
 	parking : false,
 	PackV : 0
@@ -502,6 +501,7 @@ function writeMongoLog(callback,obj,id,job) {
 
 		 var lightObj = fillTemplate(getTemplate(), obj);
 		 
+          lightObj.log_time =  new Date();
          var logs = db.collection('logs');
 
          if (job)  job.log("WriteMongoLog connect");
@@ -529,7 +529,7 @@ function writeMongoLog(callback,obj,id,job) {
 
 
 function fillTemplate(template, obj){
-	var keys = Object.getOwnPropertyNames(template);
+	//var keys = Object.getOwnPropertyNames(template);
 	for (var key in obj) {
 		if(template[key]!==undefined)
 			template[key] = obj[key];
