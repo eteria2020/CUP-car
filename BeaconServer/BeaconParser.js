@@ -31,22 +31,27 @@ var beaconid = 0;
 function getTemplate() {
    var  objTemplate = {
     VIN : 'nd',
-    Km : 0,
     SOC: 0,
-    lon : 0,
-    lat : 0,
+    ext_time : 0,
+    ext_lon : 0.0,
+    ext_lat : 0.0,
+    int_time : 0,
+    int_lon : 0.0,
+    int_lat : 0.0,
     on_trip : false,
-    ChargeCommStatus : false,
     id_trip : 0,
-    cputemp : 0,
-    uptime : 0,
-    IMEI : null,
-    Speed : 0,
-    gspeed : 0,
     KeyStatus : null,
-    id_trip : 0,
-    gps_info : null,
-    detail : null
+	HbVer : 'nd',
+	swVer : 'nd',
+	log_tx_time : new Date(0),
+	charging : false,
+	GPS : 'ND',
+	PPStatus : false,
+	ReadyOn : false,
+	batterySafety : true,
+	offLineTrips : 0,
+	parking : false,
+	PackV : 0
   };
 
   return objTemplate;
@@ -88,8 +93,7 @@ exports.process = function (json,job,done) {
    objTemplate = getTemplate();
    var obj =  merge(objTemplate,objJson);
 
-   if (obj.VIN=='CSDEMO04')
-    console.log('CSDEMO04:' + json + '----' + JSON.stringify(obj));
+   
 
    obj.json = json;
    obj.Speed =  Math.floor(obj.Speed);
@@ -495,35 +499,15 @@ function writeMongoLog(callback,obj,id,job) {
             return;
           }
 
-          var newObj= extend({}, obj);
-          newObj.log_time =  new Date();
-
-          if (obj.gps_info) {
-              newObj.gps_data = JSON.parse(obj.gps_info);
-              //newObj.gps_data.ts = new Date(newObj.gps_data.ts*1000);
-              delete newObj.gps_info;
-          }
-
-          if (obj.GPSBOX) {
-            newObj.gps_box = JSON.parse(obj.GPSBOX);
-            delete newObj.GPSBOX;
-          }
-
-          if (obj.Versions) {
-            newObj.versions = JSON.parse(obj.Versions);
-            delete Versions;
-          }
-
-          if (obj.json) {
-            delete newObj.json;
-          }
-
+		 var lightObj = fillTemplate(getTemplate(), obj);
+		 
+          lightObj.log_time =  new Date();
          var logs = db.collection('logs');
 
          if (job)  job.log("WriteMongoLog connect");
 
 
-         logs.insert(newObj , function(err,result) {
+         logs.insert(lightObj , function(err,result) {
             db.close();
              if (err) {
                console.error(obj.VIN,'Mongo insert error',err)
@@ -542,4 +526,29 @@ function writeMongoLog(callback,obj,id,job) {
         });
 
 }
+
+
+function fillTemplate(template, obj){
+	//var keys = Object.getOwnPropertyNames(template);
+	for (var key in obj) {
+		if(template[key]!==undefined)
+			template[key] = obj[key];
+	}
+	return template
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
