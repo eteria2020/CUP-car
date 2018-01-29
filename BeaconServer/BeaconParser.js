@@ -51,7 +51,8 @@ function getTemplate() {
 	batterySafety : true,
 	offLineTrips : 0,
 	parking : false,
-	PackV : 0
+	PackV : 0,
+	noGPS : false
   };
 
   return objTemplate;
@@ -351,6 +352,10 @@ function updateCarInfo(callback,obj,id,job) {
    else
         fields += ", gps=NULL";
 
+   if (obj.hasOwnProperty('noGPS'))
+       fields +=", noGPS=:noGPS ";
+   else
+       fields +=", noGPS=false ";
 
 
    var sql = "UPDATE cars_info SET lastupdate=now() " + fields + " WHERE car_plate = :VIN";
