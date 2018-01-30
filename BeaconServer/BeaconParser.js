@@ -1,4 +1,3 @@
-
 // Configurations
 var globalConfig = require('../config/globalConfig');
 var logPath = globalConfig.logPath;
@@ -351,8 +350,6 @@ function updateCarInfo(callback,obj,id,job) {
    else
         fields += ", gps=NULL";
 
-
-
    var sql = "UPDATE cars_info SET lastupdate=now() " + fields + " WHERE car_plate = :VIN";
 
    log.debug(obj.VIN, obj.IMEI , sql);
@@ -410,7 +407,9 @@ function updateCar(callback,obj,id,job) {
 
    if (obj.hasOwnProperty('PPStatus') && obj.gps_info!=null)
         fields += ', plug=:PPStatus';
-
+    
+   if (obj.hasOwnProperty('noGPS'))
+        fields +=", noGPS=:noGPS ";
 
 
    var sql = "UPDATE cars SET " + fields + " WHERE plate =:VIN;" + sql2;
