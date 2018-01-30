@@ -115,12 +115,12 @@ function Car(plate) {
 
 }
 
-Car.prototype.run = function() {
+Car.prototype.run = function(plate) {
     this.count++;
     var time= microtime();
     var msg = this.plate+ ' : ' + this.count + '  ' + (time-this.start);
     console.log(msg);
-    sendUdp(buildUdpBeacon("CSDEMO01",false))
+    sendUdp(buildUdpBeacon(plate,false))
     setTimeout(this.run.bind(this), 1000+random(-500,500));
 }
 
@@ -137,9 +137,9 @@ if (cluster.isMaster) {
     } else {
       var cars = []
       var pid = process.pid;
-      for (var i=1; i<=1; i++) {
-          var o = new Car("CAR"+i+"_"+pid);
-          o.run();
+      for (var i=1; i<=4; i++) {
+          var o = new Car(i==1?"LITEST":"LITEST"+i);
+          o.run(o.plate);
           cars.push(o);
       }
 

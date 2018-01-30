@@ -30,6 +30,31 @@ var beaconid = 0;
 function getTemplate() {
    var  objTemplate = {
     VIN : 'nd',
+    Km : 0,
+    SOC: 0,
+    lon : 0,
+    lat : 0,
+    on_trip : false,
+    ChargeCommStatus : false,
+    id_trip : 0,
+    cputemp : 0,
+    uptime : 0,
+    IMEI : null,
+    Speed : 0,
+    gspeed : 0,
+    KeyStatus : null,
+    id_trip : 0,
+    gps_info : null,
+    detail : null
+  };
+
+  return objTemplate;
+}
+
+
+function getTemplateMongo() {
+   var  objTemplateMongo = {
+    VIN : 'nd',
     SOC: 0,
     ext_time : 0,
     ext_lon : 0.0,
@@ -53,7 +78,7 @@ function getTemplate() {
 	PackV : 0
   };
 
-  return objTemplate;
+  return objTemplateMongo;
 }
 
 
@@ -498,7 +523,7 @@ function writeMongoLog(callback,obj,id,job) {
             return;
           }
 
-		 var lightObj = fillTemplate(getTemplate(), obj);
+		 var lightObj = fillTemplate(getTemplateMongo(), obj);
 		 
           lightObj.log_time =  new Date();
          var logs = db.collection('logs');
