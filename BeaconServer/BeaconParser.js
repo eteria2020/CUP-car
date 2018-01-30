@@ -397,8 +397,8 @@ function updateCar(callback,obj,id,job) {
    if (obj.hasOwnProperty('parkEnabled'))
       fields += ", park_enabled = :parkEnabled ";
 
-  if (obj.hasOwnProperty('KSStatus'))
-      fields += ", battery_safety = :KSStatus ";
+  if (obj.hasOwnProperty('batterySafety'))
+      fields += ", battery_safety = :batterySafety ";
 
    if (obj.hasOwnProperty('ReadyOn'))
        fields += ", running = :ReadyOn";
