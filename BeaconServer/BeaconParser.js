@@ -434,7 +434,7 @@ function updateCar(callback,obj,id,job) {
         fields += ', plug=:PPStatus';
     
    if (obj.hasOwnProperty('noGPS'))
-        fields +=", noGPS=:noGPS ";
+        fields +=", nogps=:noGPS ";
 
 
    var sql = "UPDATE cars SET " + fields + " WHERE plate =:VIN;" + sql2;
