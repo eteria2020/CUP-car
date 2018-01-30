@@ -63,8 +63,8 @@ function buildUdpBeacon( plate , longVersion)  {
         "KSStatus":false,
         "ChCommStatus":false,
         "VER":"V2.1" ,
-
-      "lon":9.0817,
+		"noGPS":true,
+		"lon":9.0817,
         "lat":45.4547,
         "GPS":"INT",
         "cputemp":65,
