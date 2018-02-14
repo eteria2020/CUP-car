@@ -33,7 +33,7 @@ function compressString(str) {
 
 
 
-function buildUdpBeacon( plate , longVersion)  {
+function buildUdpBeacon( plate , longVersion, num)  {
   var beacon =
       { "keyOn":true,
         "GearStatus":"D",
@@ -80,7 +80,41 @@ function buildUdpBeacon( plate , longVersion)  {
         "ext_lon":9.0817,
         "ext_lat":9.0817,
         "ext_time":Math.floor(Date.now()/1000)};
-
+	switch(num){
+		case 1:
+			beacon["PPStatus"]=true;
+			beacon["charging"]=true;
+			beacon["SOC"]=20;
+			beacon["lat"]=43.536761;
+			beacon["lon"]=10.334823;
+			break;
+		case 2:
+			beacon["PPStatus"]=true;
+			beacon["charging"]=true;
+			beacon["SOC"]=80;
+			beacon["lat"]=43.536761;
+			beacon["lon"]=10.334823;
+			break;
+		case 3:
+			beacon["PPStatus"]=true;
+			beacon["charging"]=true;
+			beacon["SOC"]=80;
+			beacon["lat"]=43.536761;
+			beacon["lon"]=10.334823;
+			break;
+		case 4:
+			beacon["PPStatus"]=true;
+			beacon["charging"]=true;
+			beacon["SOC"]=80;
+			beacon["lat"]=43.536761;
+			beacon["lon"]=10.334823;
+			break;
+			
+		default:
+		
+			break;
+	}
+  
    var ext =
       {"fwVer":"V3.1",
        "swVer":"0.88",
@@ -108,8 +142,9 @@ function buildUdpBeacon( plate , longVersion)  {
 
 }
 
-function Car(plate) {
+function Car(plate, num) {
   this.plate = plate;
+  this.num = num;
   this.count = 0;
   this.start =  microtime();
 
@@ -120,8 +155,8 @@ Car.prototype.run = function() {
     var time= microtime();
     var msg = this.plate+ ' : ' + this.count + '  ' + (time-this.start);
     console.log(msg);
-    sendUdp(buildUdpBeacon(this.plate,false))
-    setTimeout(this.run.bind(this), 1000+random(-500,500));
+    sendUdp(buildUdpBeacon(this.plate,false, this.num))
+    setTimeout(this.run.bind(this), 4000+random(-500,500));
 }
 
 
@@ -138,7 +173,7 @@ if (cluster.isMaster) {
       var cars = []
       var pid = process.pid;
       for (var i=1; i<=4; i++) {
-          var o = new Car(i==1?"LITEST":"LITEST"+i);
+          var o = new Car(i==1?"LITEST":"LITEST"+i,i);
           o.run();
           cars.push(o);
       }
