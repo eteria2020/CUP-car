@@ -115,6 +115,7 @@ exports.process = function (json,job,done) {
 
    //console.log(JSON.stringify(objTemplate));
    objTemplate = getTemplate();
+   objTemplate.VIN = job.data.sender;
    var obj =  merge(objTemplate,objJson);
 
    
