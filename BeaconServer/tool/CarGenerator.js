@@ -79,34 +79,36 @@ function buildUdpBeacon( plate , longVersion, num)  {
         "int_time":Date.now(),
         "ext_lon":9.0817,
         "ext_lat":9.0817,
-        "ext_time":Math.floor(Date.now()/1000)};
+        "ext_time":Math.floor(Date.now()/1000),
+	"batterySafety":true,
+	"noGPS":false};
 	switch(num){
 		case 1:
-			beacon["PPStatus"]=true;
-			beacon["charging"]=true;
-			beacon["SOC"]=20;
-			beacon["lat"]=43.536761;
+			beacon["PPStatus"]=false;
+			beacon["charging"]=false;
+			beacon["SOC"]=40;
+			beacon["lat"]=42.46274;
 			beacon["lon"]=10.334823;
 			break;
 		case 2:
-			beacon["PPStatus"]=true;
-			beacon["charging"]=true;
-			beacon["SOC"]=80;
-			beacon["lat"]=43.536761;
-			beacon["lon"]=10.334823;
+			beacon["PPStatus"]=false;
+			beacon["charging"]=false;
+			beacon["SOC"]=40;
+			beacon["lat"]=45.46274;
+			beacon["lon"]=9.20696;
 			break;
 		case 3:
 			beacon["PPStatus"]=true;
 			beacon["charging"]=true;
-			beacon["SOC"]=80;
-			beacon["lat"]=43.536761;
-			beacon["lon"]=10.334823;
+			beacon["SOC"]=100;
+			beacon["lat"]=45.46274;
+			beacon["lon"]=9.20696;
 			break;
 		case 4:
-			beacon["PPStatus"]=true;
-			beacon["charging"]=true;
-			beacon["SOC"]=80;
-			beacon["lat"]=43.536761;
+			beacon["PPStatus"]=false;
+			beacon["charging"]=false;
+			beacon["SOC"]=100;
+			beacon["lat"]=41.536761;
 			beacon["lon"]=10.334823;
 			break;
 			
@@ -156,7 +158,7 @@ Car.prototype.run = function() {
     var msg = this.plate+ ' : ' + this.count + '  ' + (time-this.start);
     console.log(msg);
     sendUdp(buildUdpBeacon(this.plate,false, this.num))
-    setTimeout(this.run.bind(this), 4000+random(-500,500));
+    setTimeout(this.run.bind(this), 90000+random(-500,500));
 }
 
 
