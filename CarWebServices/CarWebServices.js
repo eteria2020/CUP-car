@@ -66,8 +66,8 @@ var redisCluster =      globalConfig.redisCluster || [];
 var restify = require('restify');
 
 var pg = require('pg').native;
-pg.defaults.poolSize = 25;
-pg.defaults.poolIdleTimeout=5000; // 5 sec
+pg.defaults.poolSize = 50;
+pg.defaults.poolIdleTimeout=1000; // 5 sec
 
 var morgan = require('morgan');
 fs.existsSync(logPath) || fs.mkdirSync(logPath)
@@ -95,7 +95,7 @@ var dlog = {
 var server;
 var unsecureServer;
 
-var funcs = require('./restFunctions')( {pg: pg , conString: conString, validator: validator});
+var funcs = require('./restFunctions')( {pg: pg , conString: conString, validator: validator, log:dlog});
 
 
 // Local functions
@@ -144,8 +144,8 @@ function registerServer(server) {
 	server.use(restify.gzipResponse());
 	server.use(restify.bodyParser());
 	server.use(restify.throttle({
-	    burst: 32,
-	    rate: 200,
+	    burst: 32,//32
+	    rate: 200,//200
 	    ip: true,
 	    /*overrides: {
 		    '192.168.1.1': {
@@ -211,13 +211,48 @@ function registerServer(server) {
 		funcs.getConfigs
 	);
 
+    server.get(
+        {path: '/reservation/:plate', version: '1.0.0'},
+        funcs.getReservation
+    );
+
+    server.get(
+        {path: '/commands/:plate', version: '1.0.0'},
+        funcs.getCommands
+    );
+
+    server.get(
+        {path: '/area', version: '1.0.0'},
+        funcs.getArea
+    );
+
+    /*server.get(
+        {path: '/commands', version: '1.0.0'},
+        funcs.getCommands
+    );
+
+    server.get(
+        {path: '/trip', version: '1.0.0'},
+        funcs.getTrip
+    );
+
+    server.get(
+        {path: '/zone', version: '1.0.0'},
+        funcs.getZone
+    );
+
+    server.get(
+        {path: '/pois', version: '1.0.0'},
+        funcs.getPoi
+    );*/
+
 	server.get(
         {path: '/whitelist', version: '1.0.0'},
 		funcs.getWhitelist
 	);
-  server.get({ path: '/whitelist2', version: '1.0.0' },
-      funcs.getWhitelist2
-  );
+	  server.get({ path: '/whitelist2', version: '1.0.0' },
+		  funcs.getWhitelist2
+	  );
 
     server.get(
         {path: '/business-employees', version: '1.0.0'},

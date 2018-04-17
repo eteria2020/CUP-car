@@ -8,6 +8,7 @@ function init (opt) {
      // optional params
      opt = opt || {};
 
+     var log = opt.log;
      var pg  = opt.pg;
      var conString = opt.conString;
      var validator = opt.validator;
@@ -60,6 +61,203 @@ function init (opt) {
 	    return next();
 	},
 
+	 /**
+          * get pois
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getReservation: function(req, res, next) {
+             //if(sanitizeInput(req,res)){
+             next();
+             pg.connect(conString, function(err, client, done) {
+
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return;// next(false);
+                 }
+
+
+                 query = "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
+                     "FROM reservations " +
+                     "WHERE  car_plate = $1";
+                 if(typeof  req.params.plate === 'undefined') {
+                     sendOutJSON(res,400,'Missing plate',null);
+                     return ;
+                 }
+                 var params = [req.params.plate];
+                 var resId = [];
+
+                 client.query(
+                     query,
+                     params,
+                     function (err, result) {
+                         if (pgError(err, client)) {
+                             responseError(res, err);
+                         } else {
+                             if ((typeof result !== 'undefined')) {
+                                 //outJson = JSON.stringify(result.rows);
+                             }
+                             //log.d(result.rows);
+                             res.send(result.rows);
+                             if (result.rows.length > 0 && result.rows[0].id > 0) {
+                                 resId = [result.rows[0].id];
+
+                                 var query2 = "UPDATE reservations SET to_send = FALSE , sent_ts = now() WHERE id= $1 AND to_send = TRUE";
+                                 client.query(
+                                     query2,
+                                     resId,
+                                     function (err, result) {
+                                         done();
+                                         if (pgError(err, client)) {
+                                             //responseError(res, err);
+                                         } else {
+
+                                             log.d("query2 done" + resId.length);
+                                             /*if ((typeof result !== 'undefined')) {
+                                                 //outJson = JSON.stringify(result.rows);
+                                             }
+                                             res.send(200, result.rows);*/
+                                         }
+                                     }
+                                 );
+                             }
+                             done();
+                         }
+                     }
+                 );
+
+             });
+             //}
+             //return next();
+         },
+
+         /**
+          * get Commands
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getCommands: function(req, res, next) {
+             //if(sanitizeInput(req,res)){
+             next();
+             pg.connect(conString, function(err, client, done) {
+
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return;// next(false);
+                 }
+                 query = "UPDATE commands SET to_send = false WHERE car_plate = $1 and to_send = true RETURNING id, command , intarg1, intarg2, txtarg1, txtarg2, extract(epoch from queued) as queued, ttl, payload";
+
+                 if(typeof  req.params.plate === 'undefined') {
+                     sendOutJSON(res,400,'Missing plate',null);
+                     return ;
+                 }
+                 var params = [req.params.plate];
+
+                 client.query(
+                     query,
+                     params,
+                     function (err, result) {
+                         done();
+                         if (pgError(err, client)) {
+                             responseError(res, err);
+                         } else {
+                             if ((typeof result !== 'undefined')) {
+                                 //outJson = JSON.stringify(result.rows);
+                             }
+                             //log.d(result.rows);
+                             res.send(result.rows);
+
+                         }
+                     }
+                 );
+
+             });
+             //}
+             //return next();
+         },
+
+
+         /**
+          * get Area
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getArea: function(req, res, next) {
+             //if(sanitizeInput(req,res)){
+             next();
+             pg.connect(conString, function(err, client, done) {
+
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return;// next(false);
+                 }
+                 filter = 'AND zone.active=true';
+
+
+                 flotta =1;
+
+                 query = "SELECT close_trip,0 as costo_apertura,0 as costo_chiusura,name,ST_NPoints(area_use) as npunti, St_asText(area_use) as dump FROM  zone_groups  INNER JOIN zone ON zone.id = ANY(zone_groups.id_zone) WHERE fleet_id=$1 " + filter;
+
+
+
+                 var params = [flotta];
+
+                 client.query(
+                     query,
+                     params,
+                     function (err, result) {
+                     	done();
+                         if (pgError(err, client)) {
+                             responseError(res, err);
+                         } else {
+                         	var response = [];
+
+                         	result.rows.forEach(row => {
+                         		var jp = {};
+
+                         		if(typeof row.is_chiusura_permessa === 'undefined')
+                         			jp.close_trip = null;
+                         		else
+                                	jp.close_trip=row.is_chiusura_permessa;
+                                jp.costo_apertura=row.costo_apertura;
+                                jp.costo_chiusura=row.costo_chiusura;
+                                jp.coordinates = [];
+                                str = row.dump.substring(9, row.dump.length);
+                                points = str.split(",");
+                                points.forEach(point =>{
+                                    c = point.split(" ");
+                                    if (c[0]!=0 && c[1]!=0) {
+                                    	var lenght0 = Math.abs(Math.trunc(parseFloat(c[0]))).toString().length;
+                                        var lenght1 = Math.abs(Math.trunc(parseFloat(c[1]))).toString().length;
+                                        jp.coordinates.push(Number(parseFloat(c[0]).toFixed(14 - lenght0).toString()));
+                                        jp.coordinates.push(Number(parseFloat(c[1]).toFixed(14 - lenght1).toString()));
+                                        jp.coordinates.push(0);
+                                    }
+
+                                })
+                                response.push(jp);
+                            });
+
+
+                             //log.d(result.rows); 74f32a02de71c80c304832112aa90783
+                             json_md5 = crypto.createHash('md5').update(JSON.stringify(response)).digest("hex"); //Hash(response, {algorithm: 'md5',encoding: 'hex'});
+
+                             if (typeof req.params.md5 !== 'undefined' && req.params.md5!==null && req.params.md5!==json_md5) {
+                                 res.send(response);
+                             }
+                             res.send();
+
+                         }
+                     }
+                 );
+
+             });
+             //}
+             //return next();
+         },
 
 
 	/**
@@ -116,178 +314,178 @@ function init (opt) {
 	},
 
 
-         /**
-          * get pois
-          * @param  array   req  request
-          * @param  array   res  response
-          * @param  function next handler
-          */
-         getWhitelist: function (req, res, next) {
-             //if(sanitizeInput(req,res)){
-             pg.connect(conString, function (err, client, done) {
+	 /**
+	  * get pois
+	  * @param  array   req  request
+	  * @param  array   res  response
+	  * @param  function next handler
+	  */
+	 getWhitelist: function (req, res, next) {
+		 //if(sanitizeInput(req,res)){
+		 pg.connect(conString, function (err, client, done) {
 
-                 if (pgError(err, client)) {
-                     responseError(res, err);
-                     return next(false);
-                 }
+			 if (pgError(err, client)) {
+				 responseError(res, err);
+				 return next(false);
+			 }
 
-                 var query =
-                     "SELECT " +
-                     "id," +
-                     "name as nome," +
-                     "surname as cognome," +
-                     "language as lingua," +
-                     "mobile as cellulare ," +
-                     "enabled as abilitato," +
-                     "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as info_display," +
-                     "substring(md5(cast(pin->'primary' as text)) for 8) as pin," +
-                     "'' as pin2," +
-                     "pin as pins," +
-                     "card_code as codice_card," +
-                     "update_id  as tms " +
-                     " FROM customers  " +
-                     " WHERE update_id > $1 " +
-                     " ORDER BY update_id " +
-                     " LIMIT 5000";
+			 var query =
+				 "SELECT " +
+				 "id," +
+				 "name as nome," +
+				 "surname as cognome," +
+				 "language as lingua," +
+				 "mobile as cellulare ," +
+				 "enabled as abilitato," +
+				 "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as info_display," +
+				 "substring(md5(cast(pin->'primary' as text)) for 8) as pin," +
+				 "'' as pin2," +
+				 "pin as pins," +
+				 "card_code as codice_card," +
+				 "update_id  as tms " +
+				 " FROM customers  " +
+				 " WHERE update_id > $1 " +
+				 " ORDER BY update_id " +
+				 " LIMIT 2000";
 
-                 var params = [];
-                 if (typeof  req.params.lastupdate === 'undefined')
-                     params = [0];
-                 else
-                     params = [req.params.lastupdate];
+			 var params = [];
+			 if (typeof  req.params.lastupdate === 'undefined')
+				 params = [0];
+			 else
+				 params = [req.params.lastupdate];
 
-                 client.query(
-                     query,
-                     params,
-                     function (err, result) {
-                         if (pgError(err, client)) {
-                             responseError(res, err);
-                         } else {
-                             done();
-                             if (typeof result !== 'undefined') {
-                                 result.rows.forEach(function (item) {
-                                     // For each row compute hash for each possible pin
-                                     var a = ["primary", "secondary", "company"];
-                                     a.forEach(function (key) {
-                                         if (item.pins[key]) {
-                                             var pin = "" + item.pins[key];
-                                             item.pins[key] = crypto.createHash('md5').update(pin).digest("hex").substring(0, 8);
-                                         }
-                                     });
-                                 });
-                             }
-                             res.header('content-type', 'application/json');
-                             res.send(200, result.rows);
-                         }
-                     }
-                 );
-             });
-             //}
-             return next();
-         },
+			 client.query(
+				 query,
+				 params,
+				 function (err, result) {
+					 if (pgError(err, client)) {
+						 responseError(res, err);
+					 } else {
+						 done();
+						 if (typeof result !== 'undefined') {
+							 result.rows.forEach(function (item) {
+								 // For each row compute hash for each possible pin
+								 var a = ["primary", "secondary", "company"];
+								 a.forEach(function (key) {
+									 if (item.pins[key]) {
+										 var pin = "" + item.pins[key];
+										 item.pins[key] = crypto.createHash('md5').update(pin).digest("hex").substring(0, 8);
+									 }
+								 });
+							 });
+						 }
+						 res.header('content-type', 'application/json');
+						 res.send(200, result.rows);
+					 }
+				 }
+			 );
+		 });
+		 //}
+		 return next();
+	 },
 
-         /**
-          * get pois
-          * @param  array   req  request
-          * @param  array   res  response
-          * @param  function next handler
-          */
-         getWhitelist2: function(req, res, next) {
-             //if(sanitizeInput(req,res)){
-             pg.connect(conString, function(err, client, done) {
+	 /**
+	  * get pois
+	  * @param  array   req  request
+	  * @param  array   res  response
+	  * @param  function next handler
+	  */
+	 getWhitelist2: function(req, res, next) {
+		 //if(sanitizeInput(req,res)){
+		 pg.connect(conString, function(err, client, done) {
 
-                 if (pgError(err, client)) {
-                     responseError(res, err);
-                     return next(false);
-                 }
+			 if (pgError(err, client)) {
+				 responseError(res, err);
+				 return next(false);
+			 }
 
-                 var query =
-                     "SELECT " +
-                     "id as i," +
-                     "name as n," +
-                     "surname as c," +
-                     "mobile as t ," +
-                     "enabled as a," +
-                     "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as id," + // infoDisplay
-                     "substring(md5(cast(pin->'primary' as text)) for 8) as p," +
-                     "pin as ps," +
-                     "card_code as cc," +
-                     "update_id  as tm " +
-                     " FROM customers  " +
-                     " WHERE update_id > $1 " +
-                     " ORDER BY update_id " +
-                     " LIMIT 10000";
+			 var query =
+				 "SELECT " +
+				 "id as i," +
+				 "name as n," +
+				 "surname as c," +
+				 "mobile as t ," +
+				 "enabled as a," +
+				 "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as id," + // infoDisplay
+				 "substring(md5(cast(pin->'primary' as text)) for 8) as p," +
+				 "pin as ps," +
+				 "card_code as cc," +
+				 "update_id  as tm " +
+				 " FROM customers  " +
+				 " WHERE update_id > $1 " +
+				 " ORDER BY update_id " +
+				 " LIMIT 2000";
 
-                 var params = [];
-                 if (typeof req.params.lastupdate === 'undefined')
-                     params = [0];
-                 else
-                     params = [req.params.lastupdate];
+			 var params = [];
+			 if (typeof req.params.lastupdate === 'undefined')
+				 params = [0];
+			 else
+				 params = [req.params.lastupdate];
 
-                 client.query(
-                     query,
-                     params,
-                     function(err, result) {
-                         if (pgError(err, client)) {
-                             responseError(res, err);
-                         } else {
-                             done();
-                             if (typeof result !== 'undefined') {
-                                 result.rows.forEach(function(item) {
-                                     // For each row compute hash for each possible pin
-                                     var a = ["primary", "secondary", "company"];
-                                     a.forEach(function(key) {
-                                         if (item.ps[key]) {
-                                             var p = "" + item.ps[key];
-                                             item.ps[key] = crypto.createHash('md5').update(p).digest("hex").substring(0, 8);
-                                         }
-                                     });
-                                 });
-                             }
-                             res.header('content-type', 'application/json');
-                             res.send(200, result.rows);
-                         }
-                     }
-                 );
-             });
-             //}
-             return next();
-         },
+			 client.query(
+				 query,
+				 params,
+				 function(err, result) {
+					 if (pgError(err, client)) {
+						 responseError(res, err);
+					 } else {
+						 done();
+						 if (typeof result !== 'undefined') {
+							 result.rows.forEach(function(item) {
+								 // For each row compute hash for each possible pin
+								 var a = ["primary", "secondary", "company"];
+								 a.forEach(function(key) {
+									 if (item.ps[key]) {
+										 var p = "" + item.ps[key];
+										 item.ps[key] = crypto.createHash('md5').update(p).digest("hex").substring(0, 8);
+									 }
+								 });
+							 });
+						 }
+						 res.header('content-type', 'application/json');
+						 res.send(200, result.rows);
+					 }
+				 }
+			 );
+		 });
+		 //}
+		 return next();
+	 },
 
-         /**
-          * get list of businesses
-          * @param req
-          * @param res
-          * @param next
-          */
-         getBusinessEmployees: function (req, res, next) {
-             pg.connect(conString, function (err, client, done) {
+	 /**
+	  * get list of businesses
+	  * @param req
+	  * @param res
+	  * @param next
+	  */
+	 getBusinessEmployees: function (req, res, next) {
+		 pg.connect(conString, function (err, client, done) {
 
-                 if (pgError(err, client)) {
-                     responseError(res, err);
-                     return next(false);
-                 }
+			 if (pgError(err, client)) {
+				 responseError(res, err);
+				 return next(false);
+			 }
 
-                 var query = "SELECT " +
-                     "employee_id as id, business_code as codice_azienda, business.is_enabled as azienda_abilitata, time_limits as limite_orari " +
-                     "FROM business.business_employee JOIN business.business ON (business_code = code) " +
-                     "WHERE status = 'approved'";
-                 client.query(
-                     query,
-                     [],
-                     function (err, result) {
-                         if (pgError(err, client)) {
-                             responseError(res, err);
-                         } else {
-                             done();
-                             res.header('content-type', 'application/json');
-                             res.send(200, result.rows);
-                         }
-                     }
-                 );
-             });
-             return next();
-         },
+			 var query = "SELECT " +
+				 "employee_id as id, business_code as codice_azienda, business.is_enabled as azienda_abilitata, time_limits as limite_orari " +
+				 "FROM business.business_employee JOIN business.business ON (business_code = code) " +
+				 "WHERE status = 'approved'";
+			 client.query(
+				 query,
+				 [],
+				 function (err, result) {
+					 if (pgError(err, client)) {
+						 responseError(res, err);
+					 } else {
+						 done();
+						 res.header('content-type', 'application/json');
+						 res.send(200, result.rows);
+					 }
+				 }
+			 );
+		 });
+		 return next();
+	 },
 
 /* / GET */
 
