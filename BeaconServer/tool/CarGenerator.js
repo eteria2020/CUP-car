@@ -2,6 +2,7 @@
 
 const axios = require('axios');
 
+const Utility = require('./utility.js');
 
 var cluster =   require('cluster');
 var dgram = require('dgram');
@@ -450,9 +451,10 @@ Car.prototype.sendTrips = function getWitelist(){
             }
         })
             .then(response => {
-                //console.log(response.data);
+                this.tripResponse = 0;
             })
             .catch(error => {
+                this.tripResponse = 0;
                 console.log(error);
             });
     }
@@ -463,24 +465,9 @@ Car.prototype.sendEvents = function getWitelist(){
     var time= microtime();
     var msg = this.plate+ ' : events  ' + (time-this.start);
     console.log(msg);
-    axios.get(hostPHP + 'pushevent.php', {
-        params: {
-            event_id: 15,
-            label: 'KEY',
-            car_plate: this.plate,
-            customer_id: 26740,
-            trip_id: 0,
-            event_time: new Date().getTime(),
-            intval: 1,
-            txtval: 'null',
-            lon: 9.182768666666668,
-            lat: 45.45682866666666,
-            km: 22016,
-            battery: 61,
-            imei: 861311004993399,
-
-        }
-    })
+    axios.get(hostNode +"events",
+        Utility.generateRandomEvents(this)
+    )
         .then(response => {
             //console.log(response.data);
         })
@@ -532,16 +519,16 @@ Car.prototype.run = function() {
     var time= microtime();
     var msg = this.plate+ ' : ' + this.count + '  ' + (time-this.start);
     console.log(msg);
-    setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),         1*5*1000),random(0,10000)); //limite su VM 2 sec
-    //setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*15*1000),random(0,10000)); // impatto alto se richiede sempre tutti i dati
-    //setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*1*1000),random(0,10000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
-    //setTimeout(()=>setInterval(this.getConfig.bind(this),          1*1*1000),random(0,10000)); //impatto minimo
-    //setTimeout(()=>setInterval(this.getArea.bind(this),            1*1*1000),random(0,10000)); //alto impatto carico aumenta fino a 5 fermo
-    //setTimeout(()=>setInterval(this.getCommands.bind(this),        1*1*1000),random(0,10000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
-    //setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*1*1000),random(0,10000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
+    // setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),         1*10*1000),random(0,10000)); //limite su VM 2 sec
+    // setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*10*1000),random(0,10000)); // impatto alto se richiede sempre tutti i dati
+    // setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*10*1000),random(0,10000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
+    // setTimeout(()=>setInterval(this.getConfig.bind(this),          1*10*1000),random(0,10000)); //impatto minimo
+    // setTimeout(()=>setInterval(this.getArea.bind(this),            1*10*1000),random(0,10000)); //alto impatto carico aumenta fino a 5 fermo
+    // setTimeout(()=>setInterval(this.getCommands.bind(this),        1*10*1000),random(0,10000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
+    // setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*1*1000),random(0,10000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
     //setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*1*1000),random(0,10000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
-    //setTimeout(()=>setInterval(this.getReservations.bind(this),    1*1*1000),random(0,10000)); //ogni 2 sec con pm2 load 0.30
-    //setTimeout(()=>setInterval(this.getPois.bind(this),            1*1*1000),random(0,10000));
+    // setTimeout(()=>setInterval(this.getReservations.bind(this),    1*10*1000),random(0,10000)); //ogni 2 sec con pm2 load 0.30
+    // setTimeout(()=>setInterval(this.getPois.bind(this),            1*1*1000),random(0,10000));
 };
 
 
@@ -557,7 +544,7 @@ if (cluster.isMaster) {
     } else {
       var cars = []
       var pid = process.pid;
-      for (var i=1; i<=4; i++) {
+      for (var i=1; i<=100; i++) {
           var car = new Car(i===1?"LITEST":"LITEST"+i,i);
           car.run();
           cars.push(car);

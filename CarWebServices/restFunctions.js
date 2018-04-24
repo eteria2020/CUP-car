@@ -1,4 +1,8 @@
-var crypto = require('crypto');
+const crypto = require('crypto');
+
+const MongoClient = require('mongodb').MongoClient;
+
+const Utility = require('./utility.js')();
 
 module.exports = init
 
@@ -12,6 +16,7 @@ function init (opt) {
      var pg  = opt.pg;
      var conString = opt.conString;
      var validator = opt.validator;
+     const mongoUrl = opt.mongoUrl;
 
      return {
 /* GET */
@@ -78,54 +83,85 @@ function init (opt) {
                  }
 
 
-                 query = "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
-                     "FROM reservations " +
-                     "WHERE  car_plate = $1";
-                 if(typeof  req.params.plate === 'undefined') {
-                     sendOutJSON(res,400,'Missing plate',null);
-                     return ;
-                 }
-                 var params = [req.params.plate];
-                 var resId = [];
-
-                 client.query(
-                     query,
-                     params,
-                     function (err, result) {
-                         if (pgError(err, client)) {
-                             responseError(res, err);
-                         } else {
-                             if ((typeof result !== 'undefined')) {
-                                 //outJson = JSON.stringify(result.rows);
-                             }
-                             //log.d(result.rows);
-                             res.send(result.rows);
-                             if (result.rows.length > 0 && result.rows[0].id > 0) {
-                                 resId = [result.rows[0].id];
-
-                                 var query2 = "UPDATE reservations SET to_send = FALSE , sent_ts = now() WHERE id= $1 AND to_send = TRUE";
-                                 client.query(
-                                     query2,
-                                     resId,
-                                     function (err, result) {
-                                         done();
-                                         if (pgError(err, client)) {
-                                             //responseError(res, err);
-                                         } else {
-
-                                             log.d("query2 done" + resId.length);
-                                             /*if ((typeof result !== 'undefined')) {
-                                                 //outJson = JSON.stringify(result.rows);
-                                             }
-                                             res.send(200, result.rows);*/
-                                         }
-                                     }
-                                 );
-                             }
-                             done();
-                         }
+                 if (typeof req.params.consumed === 'undefined') {
+                     if (typeof  req.params.plate === 'undefined') {
+                         sendOutJSON(res, 400, 'Missing plate', null);
+                         return;
                      }
-                 );
+
+                     query = "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
+                         "FROM reservations " +
+                         "WHERE  car_plate = $1";
+
+                     var params = [req.params.plate];
+                     var resId = [];
+
+                     client.query(
+                         query,
+                         params,
+                         function (err, result) {
+                             if (pgError(err, client)) {
+                                 responseError(res, err);
+                             } else {
+                                 if ((typeof result !== 'undefined')) {
+                                     //outJson = JSON.stringify(result.rows);
+                                 }
+                                 //log.d(result.rows);
+                                 res.send(result.rows);
+                                 if (result.rows.length > 0 && result.rows[0].id > 0) {
+                                     resId = [result.rows[0].id];
+
+                                     var query2 = "UPDATE reservations SET to_send = FALSE , sent_ts = now() WHERE id= $1 AND to_send = TRUE";
+                                     client.query(
+                                         query2,
+                                         resId,
+                                         function (err, result) {
+                                             done();
+                                             if (pgError(err, client)) {
+                                                 //responseError(res, err);
+                                             } else {
+
+                                                 //log.d("query2 done" + resId.length);
+                                                 /*if ((typeof result !== 'undefined')) {
+                                                     //outJson = JSON.stringify(result.rows);
+                                                 }
+                                                 res.send(200, result.rows);*/
+                                             }
+                                         }
+                                     );
+                                 }
+                                 done();
+                             }
+                         }
+                     );
+
+                 }else{
+
+                     query = "UPDATE reservations SET consumed_ts = now() , active = false WHERE id = $1 RETURNING id";
+
+                     var params = [req.params.consumed];
+                     var resId = [];
+
+                     client.query(
+                         query,
+                         params,
+                         function (err, result) {
+                             if (pgError(err, client)) {
+                                 responseError(res, err);
+                             } else {
+                                 if ((typeof result !== 'undefined')) {
+                                     //outJson = JSON.stringify(result.rows);
+                                 }
+                                 //log.d(result.rows);
+                                 res.send(result.rows);
+
+                                 done();
+                             }
+                         }
+                     );
+
+                 }
+
 
              });
              //}
@@ -175,6 +211,119 @@ function init (opt) {
 
              });
              //}
+             //return next();
+         },
+
+         /**
+          * get Events
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         postEvents: function(req, res, next) {
+             next();
+             if(Utility.validateEvents(req,res)){
+             //Begin write MongoLog
+                 let event = Utility.fillTemplate(Utility.getTemplateMongo(), req.params);
+                 event.event_time = new Date(event.event_time);
+                 event.server_time  = new Date();
+                 event.geo = {};
+                 event.geo.type='Point';
+                 event.geo.coordinates= [parseFloat(event.lon), parseFloat(event.lat)];
+
+                 MongoClient.connect(mongoUrl, function(err, db) {
+                     if (err) {
+                         console.error(req.params.car_plate,'Mongo connect error',err);
+                         sendOutJSON(res,400,-10,null);
+                         return;
+                     }
+
+
+                     var events = db.collection('events');
+
+
+                     events.insert(event , function(err,result) {
+                         db.close();
+                         if (err) {
+                             console.error(event.car_plate,'Mongo insert error',err)
+                             log.error(event.car_plate,'Mongo insert error',err);
+                             sendOutJSON(res,400,-11,null);
+                         } else {
+                             console.log(event.car_plate,"Mongo insert completed:" + result.result.n);
+
+                             sendOutJSON(res,200,1,null);
+                         }
+
+                     });
+
+
+                 });
+
+                 var query;
+
+                 var params
+                 switch (event.label){
+                     case "CHARGE":
+                     	query = "UPDATE cars SET charging = $1 , plug = TRUE WHERE plate = $2";
+                     	params = [event.intval === 1, event.car_plate];
+                         break;
+                     case "SW_BOOT":
+                         query = "INSERT INTO commands (car_plate,command,txtarg1, queued,to_send) VALUES ($1,'SET_DAMAGES', (select damages FROM cars WHERE plate=$1) , now(),TRUE);";
+                         params = [event.car_plate];
+                         break;
+                     case "SELFCLOSE":
+                     	if(event.txtval === "NOPAY") {
+                            query = "UPDATE trips SET payable = FALSE WHERE id = $1";
+                            params = [event.trip_id];
+                        }
+                         break;
+                     case "CLEANLINESS":
+                         query = "UPDATE cars SET int_cleanliness = $1 , ext_cleanliness = $2 WHERE plate=$3";
+
+                         let values = Utility.getCleanliness(event.txtval);
+                         params = [values[0], values[1], event.car_plate];
+                         break;
+                     case "SOS":
+                         query = "INSERT INTO messages_outbox  (destination,type,subject,submitted,meta) VALUES ('support','SOS','SOS call',now(),$1)";
+                         params = [JSON.stringify(event)];
+                         break;
+                     case "SHUTDOWN":
+                     case "CAN_ANOMALIES":
+                         query = "INSERT INTO events (event_time,server_time,car_plate, event_id, label, customer_id, trip_id, intval, txtval, lon,lat, geo ,km,battery,imei,data) " +
+                             "VALUES ($1,now(),$2,$3,$4,$5, $6, $7, $8, cast($9 as numeric),cast($10 as numeric), ST_SetSRID(ST_MakePoint($9,$10),4326), $11, $12, $13, $14) RETURNING id";
+                         params = [event.event_time, event.car_plate, event.event_id, event.label, event.customer_id, event.trip_id, event.intval, event.txtval, event.lon, event.lat, event.km, event.battery, event.imei, event.data];
+                         break;
+				 }
+
+
+                 pg.connect(conString, function(err, client, done) {
+
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return;// next(false);
+                 }
+
+                 client.query(
+                     query,
+                     params,
+                     function (err, result) {
+                         done();
+                         if (err) {
+                             logError(err,err);
+                         } else {
+                             if ((typeof result !== 'undefined')) {
+                                 //outJson = JSON.stringify(result.rows);
+                             }
+                             //log.d(result.rows);
+
+                             sendOutJSON(res,200,null,null);
+
+                         }
+                     }
+                 );
+
+             });
+             }
              //return next();
          },
 
@@ -751,7 +900,7 @@ function init (opt) {
 		){
 			console.log('\n+++++++++++++++++\nvalidation error\n');
 			console.log(req.params);
-			sendOutJSON(res,400,'Invalid parameters',null);
+			sendOutJSON(res,400,'Invalid parameters',req.params);
 			return false;
 		}else{
 			return true;

@@ -50,6 +50,7 @@ try {
 }
 
 var conString =         config.pgDb || globalConfig.pgDb;
+var mongoUrl =          config.mongoDB || globalConfig.mongoUrl;
 var redisServer =       config.redisServer || globalConfig.redisServer;
 var redisDb =           config.redisDb;
 var logPath =           config.logPath || globalConfig.logPath;
@@ -95,7 +96,7 @@ var dlog = {
 var server;
 var unsecureServer;
 
-var funcs = require('./restFunctions')( {pg: pg , conString: conString, validator: validator, log:dlog});
+var funcs = require('./restFunctions')( {pg: pg , conString: conString, validator: validator, log:dlog, mongoUrl :mongoUrl});
 
 
 // Local functions
@@ -206,10 +207,14 @@ function registerServer(server) {
 	);
 	*/
 
-	server.get(
+    server.get(
         {path: '/configs', version: '1.0.0'},
-		funcs.getConfigs
-	);
+        funcs.getConfigs
+    );
+    server.post(
+        {path: '/events', version: '1.0.0'},
+        funcs.postEvents
+    );
 
     server.get(
         {path: '/reservation/:plate', version: '1.0.0'},
