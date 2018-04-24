@@ -465,7 +465,7 @@ Car.prototype.sendEvents = function getWitelist(){
     var time= microtime();
     var msg = this.plate+ ' : events  ' + (time-this.start);
     console.log(msg);
-    axios.get(hostNode +"events",
+    axios.post(hostNode +"events",
         Utility.generateRandomEvents(this)
     )
         .then(response => {
