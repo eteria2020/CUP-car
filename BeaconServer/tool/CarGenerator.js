@@ -519,16 +519,16 @@ Car.prototype.run = function() {
     var time= microtime();
     var msg = this.plate+ ' : ' + this.count + '  ' + (time-this.start);
     console.log(msg);
-    // setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),         1*10*1000),random(0,10000)); //limite su VM 2 sec
-    // setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*10*1000),random(0,10000)); // impatto alto se richiede sempre tutti i dati
-    // setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*10*1000),random(0,10000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
-    // setTimeout(()=>setInterval(this.getConfig.bind(this),          1*10*1000),random(0,10000)); //impatto minimo
-    // setTimeout(()=>setInterval(this.getArea.bind(this),            1*10*1000),random(0,10000)); //alto impatto carico aumenta fino a 5 fermo
-    // setTimeout(()=>setInterval(this.getCommands.bind(this),        1*10*1000),random(0,10000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
-    // setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*1*1000),random(0,10000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
-    //setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*1*1000),random(0,10000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
-    // setTimeout(()=>setInterval(this.getReservations.bind(this),    1*10*1000),random(0,10000)); //ogni 2 sec con pm2 load 0.30
-    // setTimeout(()=>setInterval(this.getPois.bind(this),            1*1*1000),random(0,10000));
+    setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),      1*60*1000),random(0,1*60*1000)); //limite su VM 2 sec
+    setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*60*1000),random(0,1*60*1000)); // impatto alto se richiede sempre tutti i dati
+    setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*60*1000),random(0,1*60*1000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
+    setTimeout(()=>setInterval(this.getConfig.bind(this),          1*60*1000),random(0,1*60*1000)); //impatto minimo
+    setTimeout(()=>setInterval(this.getArea.bind(this),            1*60*1000),random(0,1*60*1000)); //alto impatto carico aumenta fino a 5 fermo
+    setTimeout(()=>setInterval(this.getCommands.bind(this),        1*60*1000),random(0,1*60*1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
+    setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*60*1000),random(0,1*60*1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
+    setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*60*1000),random(0,1*60*1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
+    setTimeout(()=>setInterval(this.getReservations.bind(this),    1*60*1000),random(0,1*60*1000)); //ogni 2 sec con pm2 load 0.30
+    setTimeout(()=>setInterval(this.getPois.bind(this),            1*60*1000),random(0,1*60*1000));
 };
 
 
