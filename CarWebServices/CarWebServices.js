@@ -49,16 +49,17 @@ try {
     var globalConfig = {};
 }
 
-var conString =         config.pgDb || globalConfig.pgDb;
-var mongoUrl =          config.mongoDB || globalConfig.mongoUrl;
-var redisServer =       config.redisServer || globalConfig.redisServer;
-var redisDb =           config.redisDb;
-var logPath =           config.logPath || globalConfig.logPath;
-var serverName =        config.serverName || 'CarWebServices';
-var standardPort =      config.httpPort || 8123;
-var unsecurePort =      config.httpUnsecurePort || 8121;
-var debugMode =         config.debugMode || false;
-var redisCluster =      globalConfig.redisCluster || [];
+let conString =         config.pgDb || globalConfig.pgDb;
+let conStringNonNative= config.pgDbNonNative || globalConfig.pgDb;
+let mongoUrl =          config.mongoDB || globalConfig.mongoUrl;
+let redisServer =       config.redisServer || globalConfig.redisServer;
+let redisDb =           config.redisDb;
+let logPath =           config.logPath || globalConfig.logPath;
+let serverName =        config.serverName || 'CarWebServices';
+let standardPort =      config.httpPort || 8123;
+let unsecurePort =      config.httpUnsecurePort || 8121;
+let debugMode =         config.debugMode || false;
+let redisCluster =      globalConfig.redisCluster || [];
 
 
 
@@ -96,7 +97,7 @@ var dlog = {
 var server;
 var unsecureServer;
 
-var funcs = require('./restFunctions')( {pg: pg , conString: conString, validator: validator, log:dlog, mongoUrl :mongoUrl});
+var funcs = require('./restFunctions')( {pg: pg, conString: conString, validator: validator, log:dlog, mongoUrl :mongoUrl});
 
 
 // Local functions
@@ -214,6 +215,11 @@ function registerServer(server) {
     server.post(
         {path: '/events', version: '1.0.0'},
         funcs.postEvents
+    );
+
+    server.post(
+        {path: '/trips', version: '1.0.0'},
+        funcs.postTrips
     );
 
     server.get(

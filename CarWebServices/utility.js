@@ -4,7 +4,7 @@ module.exports = init;
 function init () {
 
 return {
-    getTemplateMongo: function () {
+    getTemplateMongoEvent: function () {
         return {
             event_time: new Date().getTime()/1000,
             event_id: 0,
@@ -21,6 +21,27 @@ return {
             battery: 0,
             imei: null,
             json_data: null
+        };
+    },
+    getTemplateTrip: function () {
+        return {
+            cmd: 0,
+            id: 0,
+            id_veicolo: "XH123KM",
+            address_beginning: "",
+            id_cliente: 0,
+            ora: 0,
+            km: 0,
+            carburante: 0,
+            lon: 0,
+            lat: 0,
+            warning: "",
+            mac: 0,
+            imei: 0,
+            park_seconds: 0,
+            n_pin: 1,
+            id_parent: null,
+            REMOTE_ADDR: null
         };
     },
 
@@ -75,6 +96,46 @@ return {
         }else{
             return true;
         }
+    },
+    validateTrips: function (req,res){
+        //logReq(req);
+
+       /* if(
+            (typeof req.params.cmd === 'undefined')
+            ||
+            (typeof req.params.id === 'undefined')
+            ||
+            (typeof req.params.id_veicolo === 'undefined')
+            ||
+            (typeof req.params.id_cliente === 'undefined')
+            ||
+            (typeof req.params.ora === 'undefined')
+            ||
+            (typeof req.params.km === 'undefined')
+            ||
+            (typeof req.params.carburante === 'undefined')
+            ||
+            (typeof req.params.lon === 'undefined')
+            ||
+            (typeof req.params.lat === 'undefined')
+            ||
+            (typeof req.params.warning === 'undefined')
+            ||
+            (typeof req.params.pulizia_int === 'undefined')
+            ||
+            (typeof req.params.pulizia_ext === 'undefined')
+            ||
+            (typeof req.params.park_seconds === 'undefined')
+            ||
+            (typeof req.params.n_pin === 'undefined')
+        ){
+            console.log('\n+++++++++++++++++\nvalidation error\n');
+            console.log(req.params);
+            sendOutJSON(res,400,'Invalid Trips parameters',null);
+            return false;
+        }else{*/
+            return true;
+       // }
     },
 
     getCleanliness: function(event) {

@@ -396,8 +396,7 @@ Car.prototype.sendTrips = function getWitelist(){
         //cmd=1&id_veicolo=ED06260&id_cliente=4897&ora=1522846781&km=22016&carburante=63&lon=9.168200500000001&lat=45.46190883333334&warning=&pulizia_int=0&pulizia_ext=0&mac=&imei=861311004993399&n_pin=1
         var msg = this.plate+ ' : open trip  ' + (time-this.start);
         console.log(msg);
-        axios.get(hostPHP + 'pushcorsa-convenzioni.php', {
-            params: {
+        axios.post(hostNode + 'trips', {
                 cmd: 1,
                 id_veicolo: this.plate,
                 id_cliente: 26740,
@@ -412,10 +411,10 @@ Car.prototype.sendTrips = function getWitelist(){
                 mac: '',
                 imei: 861311004993399,
                 n_pin: 1,
-            }
+
         })
             .then(response => {
-               // console.log(response.data);
+                console.log(response.data);
                 if(response.data.result >0){
                     this.tripResponse = response.data.result;
                 }else{
@@ -432,9 +431,8 @@ Car.prototype.sendTrips = function getWitelist(){
         //cmd=2&id=2615002&id_veicolo=ED06260&id_cliente=26747&ora=1518639666&km=22016&carburante=95&lon=9.223741166666667&lat=45.50886333333333&warning=&pulizia_int=0&pulizia_ext=0&park_seconds=0&n_pin=0
         var msg = this.plate+ ' : close trip  ' + (time-this.start);
         console.log(msg);
-        axios.get(hostPHP + 'pushcorsa-convenzioni.php', {
-            params: {
-                cmd: 2,
+        axios.post(hostNode + 'trips', {
+                cmd: 1,
                 id: this.tripResponse,
                 id_veicolo: this.plate,
                 id_cliente: 26740,
@@ -448,9 +446,9 @@ Car.prototype.sendTrips = function getWitelist(){
                 pulizia_ext: 0,
                 park_seconds: 0,
                 n_pin: 1,
-            }
-        })
+            })
             .then(response => {
+                console.log(response.data);
                 this.tripResponse = 0;
             })
             .catch(error => {
@@ -519,16 +517,16 @@ Car.prototype.run = function() {
     var time= microtime();
     var msg = this.plate+ ' : ' + this.count + '  ' + (time-this.start);
     console.log(msg);
-    setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),      1*60*1000),random(0,1*60*1000)); //limite su VM 2 sec
-    setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*60*1000),random(0,1*60*1000)); // impatto alto se richiede sempre tutti i dati
-    setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*60*1000),random(0,1*60*1000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
-    setTimeout(()=>setInterval(this.getConfig.bind(this),          1*60*1000),random(0,1*60*1000)); //impatto minimo
-    setTimeout(()=>setInterval(this.getArea.bind(this),            1*60*1000),random(0,1*60*1000)); //alto impatto carico aumenta fino a 5 fermo
-    setTimeout(()=>setInterval(this.getCommands.bind(this),        1*60*1000),random(0,1*60*1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
-    setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*60*1000),random(0,1*60*1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
-    setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*60*1000),random(0,1*60*1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
-    setTimeout(()=>setInterval(this.getReservations.bind(this),    1*60*1000),random(0,1*60*1000)); //ogni 2 sec con pm2 load 0.30
-    setTimeout(()=>setInterval(this.getPois.bind(this),            1*60*1000),random(0,1*60*1000));
+    // setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),      1*60*1000),random(0,1*60*1000)); //limite su VM 2 sec
+    // setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*60*1000),random(0,1*60*1000)); // impatto alto se richiede sempre tutti i dati
+    // setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*60*1000),random(0,1*60*1000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
+    // setTimeout(()=>setInterval(this.getConfig.bind(this),          1*60*1000),random(0,1*60*1000)); //impatto minimo
+    // setTimeout(()=>setInterval(this.getArea.bind(this),            1*60*1000),random(0,1*60*1000)); //alto impatto carico aumenta fino a 5 fermo
+    // setTimeout(()=>setInterval(this.getCommands.bind(this),        1*60*1000),random(0,1*60*1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
+    setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*10*1000),random(0,1*0*1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
+    // setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*60*1000),random(0,1*60*1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
+    // setTimeout(()=>setInterval(this.getReservations.bind(this),    1*60*1000),random(0,1*60*1000)); //ogni 2 sec con pm2 load 0.30
+    // setTimeout(()=>setInterval(this.getPois.bind(this),            1*60*1000),random(0,1*60*1000));
 };
 
 
@@ -544,7 +542,7 @@ if (cluster.isMaster) {
     } else {
       var cars = []
       var pid = process.pid;
-      for (var i=1; i<=100; i++) {
+      for (var i=1; i<=1; i++) {
           var car = new Car(i===1?"LITEST":"LITEST"+i,i);
           car.run();
           cars.push(car);

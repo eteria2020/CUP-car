@@ -2,6 +2,8 @@ const crypto = require('crypto');
 
 const MongoClient = require('mongodb').MongoClient;
 
+const { Pool, Client } = require('pg')
+
 const Utility = require('./utility.js')();
 
 module.exports = init
@@ -309,7 +311,7 @@ function init (opt) {
                      function (err, result) {
                          done();
                          if (err) {
-                             logError(err,err);
+                             logError(err,err.stack);
                          } else {
                              if ((typeof result !== 'undefined')) {
                                  //outJson = JSON.stringify(result.rows);
@@ -323,6 +325,51 @@ function init (opt) {
                  );
 
              });
+             }
+             //return next();
+         },
+
+         /**
+          * get Events
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         postTrips: function(req, res, next) {
+             next();
+             //sendOutJSON(res,200,null,"ciao")
+             if(Utility.validateTrips(req,res)){
+                 //Begin write MongoLog
+                 let trip = Utility.fillTemplate(Utility.getTemplateTrip(), req.params);
+                 switch (trip.cmd){
+                     case 0://info
+                         
+                         getTripInfo(trip, resp =>{//Handle error response
+                             let reason = 'No trip found';
+                             if(resp.length > 0)
+                                 reason = 'Found Trip';
+
+                             sendOutJSON(res, 200, reason, resp);
+                         });
+                         break;
+                     case 1: //OPEN TRIP
+                         openTrip(trip, resp =>{
+                             sendOutJSON(res, 200, null, resp )
+                         });
+
+                         break;
+                     case 2: //CLOSE TRIP
+                         //check if exist trip with id, car and customer
+                         //check if exist trip close with id to update data
+                         //update trips to set close
+                         //check if exist business trip
+                         //if payment type is null set trips not payable
+                         break;
+                 }
+                 //commit transaction
+
+                
+              
              }
              //return next();
          },
@@ -711,9 +758,149 @@ function init (opt) {
         return localParseAuth(request);
     }
 
-}
+};
+
+     function getClient(){
+         let client = new Client({
+             user: 'sharengo',
+             host: '127.0.0.1',
+             database: 'sharengo',
+             password: 'Sharengo1',
+             port: 5432,
+         });
+         client.connect();
+
+         return client;
+     }
+
+    /**This function start a transaction and also add the rollback logic at the error callback
+     *
+     * @param client
+     * @param err
+     * @param cb
+     */
+    function beginTransaction(client, err, cb){
+        executeQuery(client,"BEGIN",[], errParam =>transactionErrorHandling(errParam, err, client), (res, error) => cb(res, error));
+    }
+    function rollbackTransaction(client, err, cb){
+         console.log("Excecuting Rollback!!!");
+        executeQuery(client,"ROLLBACK",[], err, (res, error) => cb(res, error));
+    }
+    function commitTransaction(client, err, cb){
+        executeQuery(client,"COMMIT",[], err, (res, error) => cb(res, error));
+    }
+
+    /**
+     * This funcion is used to excecute a single query and has been created to unify the error handling always passing the received error function to cb
+     *
+     * @param client pg client
+     * @param query query to be excecuted
+     * @param params prams for the current query
+     * @param error function that accept ONE parameter that is the Error
+     * @param cb function that accept TWO parameter (result, error)
+     *          result: the result of the query
+     *          error: the the function that will handle future error
+     */
+    function executeQuery(client, query, params,error, cb){
+
+        client.query(
+            query,
+            params,
+            function (err, result) {
+                if (err) {
+                    logError(err," query was " +query + params + err.stack);
+                    error(err);
+                } else {
+                    cb(result, error);
+
+                }
+            }
+        );
+    }
 
 
+    function getTripInfo(trip, cb) {
+        let query = "SELECT * FROM trips WHERE timestamp_end is NULL AND car_plate = $1 ORDER BY timestamp_beginning ASC";
+        let params = [trip.id_veicolo];
+
+        const client = getClient();
+        try {
+
+            executeQuery(client,query,params,res1 =>cb(res1.rows));
+
+        }catch (e) {
+            console.log("Exception while executing getTripInfo query ");
+            rollbackTransaction(client,res => {});
+            cb(e);
+        }
+    }
+
+
+    function openTrip(trip, cb) {
+
+        let response = {
+            result: 0,
+            message: "OK",
+            extra: ""
+        };
+        let errorResponse ={
+            result: -10,
+            message: "OK",
+            extra: ""};
+        let payable = true;
+        let checkIfAlreadySent = "SELECT id, pin_type FROM trips WHERE car_plate = $1 AND timestamp_beginning= $2 AND customer_id = $3";
+        let checkIfAlreadySentParams = [trip.id_veicolo, trip.ora, trip.id_cliente];
+
+        let checkOtherTripCustomer = "SELECT count(*)  FROM trips WHERE car_plate <> $1 AND customer_id = $2 AND timestamp_end is null";
+        let checkOtherTripCustomerParams = [trip.id_veicolo, trip.ora, trip.id_cliente];
+
+        let checkIfTripPayable = "SELECT  (SELECT gold_list FROM customers WHERE id = $1) OR EXISTS(SELECT 1 FROM cars WHERE plate= $2 AND fleet_id > 100) gold_list ";
+        let checkIfTripPayableParams = [trip.id_cliente, trip.id_veicolo];
+
+        let insertTrip = "INSERT INTO trips ( customer_id,car_plate,timestamp_beginning,km_beginning,battery_beginning,longitude_beginning,latitude_beginning,geo_beginning,beginning_tx,payable, error_code,parent_id, address_beginning, fleet_id)" +
+                        " VALUES ($1,$2,$3,$4,$5, cast($6 as numeric),cast($7 as numeric), ST_SetSRID(ST_MakePoint($6,$7),4326), now(), $8, $9, $10, $11, " +
+                        "(SELECT fleet_id FROM cars WHERE plate=$2)) RETURNING id";
+        let insertTripParams = [trip.id_cliente, trip.id_veicolo, trip.ora, trip.km, trip.carburante, parseFloat(trip.lon), parseFloat(trip.lat), payable, response.result, trip.id_parent, trip.address_beginning];
+
+        const client = getClient();
+
+        executeQuery(client, checkIfAlreadySent, checkIfAlreadySentParams,err =>{errorResponse.extra =err.stack;cb(errorResponse);}, (res1,err1) =>{ //CHECK if trip already sent
+            if(res1.rows.length >0){ //already sent
+                //check if business
+            }else {//Passing to the new query the same function for error handling I can handle any error with only one function
+                executeQuery(client, checkOtherTripCustomer, checkOtherTripCustomerParams,err1, (res2,err2) =>{ //check if customer have other opened trips
+                    if(res2.rows[0].count > 0){
+                        response.result = -15; //Other trip open set error code
+                        response.message = "Open trips";
+                    }
+                    executeQuery(client, checkIfTripPayable, checkIfTripPayableParams,err2, (res3,err3)=>{ //check if trip should be payable
+                        payable = res3.rows[0].gold_list;
+                        beginTransaction(client, err3, (res4,err4)=> {
+                            executeQuery(client, insertTrip, insertTripParams,err4, (res5,err5) => { //insertTrip
+                                if(response.result !== 0){
+                                    response.extra = res5.rows[0].id;
+                                }else{
+                                    response.result = res5.rows[0].id;
+                                }
+                                commitTransaction(client,err5, (res6, err6) => cb(response));
+                            });
+                        });
+                    });
+                });
+            }
+
+        });
+    }
+
+    /**
+     *
+     * @param errParam error value
+     * @param error error callback
+     * @param client pg client
+     */
+    function transactionErrorHandling(errParam, error, client){
+    rollbackTransaction(client, error, (res, err) => err(errParam))
+    }
 
 
 
