@@ -15,6 +15,13 @@ var hostBeacon = "http://127.0.0.1:7600/";
 var countRes = 0;
 var countComm = 0;
 var countArea = 0;
+var countConfig = 0;
+var countEvents = 0;
+var countTrips = 0;
+var countPoi = 0;
+var countBeacon = 0;
+var countWhitelist = 0;
+var countBusiness = 0;
 
 
 function random(low, high) {
@@ -284,7 +291,7 @@ Car.prototype.sendHttpBacon = function getWitelist(){
 
     var time= microtime();
     var msg = this.plate+ ' : http beacon  ' + (time-this.start);
-    console.log(msg);
+    //console.log(msg);
     axios.get(hostBeacon +'notifies', {
         params: {
             plate: this.plate,
@@ -293,6 +300,7 @@ Car.prototype.sendHttpBacon = function getWitelist(){
     })
         .then(response => {
             //console.log(response);
+            console.log("beacon " +countBeacon++);
         })
         .catch(error => {
             console.log(error);
@@ -303,26 +311,26 @@ Car.prototype.getWhitelist = function getWitelist(){
 
       var time= microtime();
       var msg = this.plate+ ' : whitelist  ' + (time-this.start);
-      console.log(msg);
-      axios.get(hostNode +'whitelist')
+      //console.log(msg);
+      axios.get(hostNode +'whitelist2')
           .then(response => {
                   //console.log(response);
+              console.log("whitelist " +countWhitelist++);
              })
           .catch(error => {
                   console.log(error);
           });
   };
 
-
-
 Car.prototype.getBusiness = function getWitelist(){
 
     var time= microtime();
     var msg = this.plate+ ' : business  ' + (time-this.start);
-    console.log(msg);
+    //console.log(msg);
     axios.get( hostNode + 'business-employees')
         .then(response => {
             //console.log(response);
+            console.log("business " +countBusiness++);
         })
         .catch(error => {
             console.log(error);
@@ -333,7 +341,7 @@ Car.prototype.getConfig = function getWitelist(){
 
     var time= microtime();
     var msg = this.plate+ ' : config  ' + (time-this.start);
-    console.log(msg);
+    //console.log(msg);
     axios.get(hostNode + 'configs', {
         params: {
             car_plate: this.plate
@@ -341,6 +349,7 @@ Car.prototype.getConfig = function getWitelist(){
     })
         .then(response => {
             //console.log(response);
+            console.log("config " +countConfig++);
         })
         .catch(error => {
             console.log(error);
@@ -372,11 +381,11 @@ Car.prototype.getCommands = function getWitelist(){
     var time= microtime();
     var msg = this.plate+ ' : commands  ' + (time-this.start);
     //console.log(msg);
-    axios.get(hostNode + "commands/" + this.plate/*,{//hostPHP + 'get_commands.php', {
+    axios.get(hostNode + "commands" ,{//hostPHP + 'get_commands.php', {
         params: {
             car_plate: this.plate
         }
-    }*/
+    }
     )
         .then(response => {
             //console.log(response.data);
@@ -395,7 +404,7 @@ Car.prototype.sendTrips = function getWitelist(){
         //OPEN TRIP
         //cmd=1&id_veicolo=ED06260&id_cliente=4897&ora=1522846781&km=22016&carburante=63&lon=9.168200500000001&lat=45.46190883333334&warning=&pulizia_int=0&pulizia_ext=0&mac=&imei=861311004993399&n_pin=1
         var msg = this.plate+ ' : open trip  ' + (time-this.start);
-        console.log(msg);
+        //console.log(msg);
         axios.post(hostNode + 'trips', {
                 cmd: 1,
                 id_veicolo: this.plate,
@@ -414,12 +423,13 @@ Car.prototype.sendTrips = function getWitelist(){
 
         })
             .then(response => {
-                console.log(response.data);
-                if(response.data.result >0){
-                    this.tripResponse = response.data.result;
+                //console.log(response.data);
+                console.log("trips open " +countTrips++);
+                if(response.data.data.result >0){
+                    this.tripResponse = response.data.data.result;
                 }else{
 
-                    this.tripResponse = response.data.extra;
+                    this.tripResponse = response.data.data.extra;
                 }
             })
             .catch(error => {
@@ -430,9 +440,9 @@ Car.prototype.sendTrips = function getWitelist(){
         //CLOSE TRIP
         //cmd=2&id=2615002&id_veicolo=ED06260&id_cliente=26747&ora=1518639666&km=22016&carburante=95&lon=9.223741166666667&lat=45.50886333333333&warning=&pulizia_int=0&pulizia_ext=0&park_seconds=0&n_pin=0
         var msg = this.plate+ ' : close trip  ' + (time-this.start);
-        console.log(msg);
+        //console.log(msg);
         axios.post(hostNode + 'trips', {
-                cmd: 1,
+                cmd: 2,
                 id: this.tripResponse,
                 id_veicolo: this.plate,
                 id_cliente: 26740,
@@ -448,7 +458,8 @@ Car.prototype.sendTrips = function getWitelist(){
                 n_pin: 1,
             })
             .then(response => {
-                console.log(response.data);
+                //console.log(response.data);
+                console.log("trips close " +countTrips++);
                 this.tripResponse = 0;
             })
             .catch(error => {
@@ -462,12 +473,13 @@ Car.prototype.sendEvents = function getWitelist(){
 
     var time= microtime();
     var msg = this.plate+ ' : events  ' + (time-this.start);
-    console.log(msg);
+    //console.log(msg);
     axios.post(hostNode +"events",
         Utility.generateRandomEvents(this)
     )
         .then(response => {
-            //console.log(response.data);
+            console.log(response.data);
+            // console.log("events " +countEvents++);
         })
         .catch(error => {
             console.log(error);
@@ -479,15 +491,15 @@ Car.prototype.getReservations = function getWitelist(){
     var time= microtime();
     var msg = this.plate+ ' : reservations  ' + (time-this.start);
     //console.log(msg);
-    axios.get(hostNode + "reservation/" + this.plate/*,{//hostPHP + 'get_reservations.php', {
+    axios.get(hostNode + "reservation",{//hostPHP + 'get_reservations.php', {
         params: {
             car_plate: this.plate
         }
-    }*/
+    }
     )
         .then(response => {
 
-           console.log(" reservations " + countRes++);
+           console.log("reservations " + countRes++);
         })
         .catch(error => {
             console.log(error);
@@ -498,14 +510,15 @@ Car.prototype.getPois = function getWitelist(){
 
     var time= microtime();
     var msg = this.plate+ ' : pois  ' + (time-this.start);
-    console.log(msg);
-    axios.get(hostPHP + 'get_pois.php', {
+    //console.log(msg);
+    axios.get(hostNode + 'pois', {
         params: {
             lastupdate: 0
         }
     })
         .then(response => {
             //console.log(response.data);
+            console.log("poi " +countPoi++);
         })
         .catch(error => {
             console.log(error);
@@ -517,16 +530,16 @@ Car.prototype.run = function() {
     var time= microtime();
     var msg = this.plate+ ' : ' + this.count + '  ' + (time-this.start);
     console.log(msg);
-    // setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),      1*60*1000),random(0,1*60*1000)); //limite su VM 2 sec
-    // setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*60*1000),random(0,1*60*1000)); // impatto alto se richiede sempre tutti i dati
-    // setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*60*1000),random(0,1*60*1000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
-    // setTimeout(()=>setInterval(this.getConfig.bind(this),          1*60*1000),random(0,1*60*1000)); //impatto minimo
-    // setTimeout(()=>setInterval(this.getArea.bind(this),            1*60*1000),random(0,1*60*1000)); //alto impatto carico aumenta fino a 5 fermo
-    // setTimeout(()=>setInterval(this.getCommands.bind(this),        1*60*1000),random(0,1*60*1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
-    setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*10*1000),random(0,1*0*1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
-    // setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*60*1000),random(0,1*60*1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
-    // setTimeout(()=>setInterval(this.getReservations.bind(this),    1*60*1000),random(0,1*60*1000)); //ogni 2 sec con pm2 load 0.30
-    // setTimeout(()=>setInterval(this.getPois.bind(this),            1*60*1000),random(0,1*60*1000));
+     // setTimeout(()=>setInterval(this.sendHttpBacon.bind(this),      1*10*1000),random(0,1*10*1000)); //limite su VM 2 sec
+     // setTimeout(()=>setInterval(this.getWhitelist.bind(this),       1*10*1000),random(0,1*10*1000)); // impatto alto se richiede sempre tutti i dati
+     // setTimeout(()=>setInterval(this.getBusiness.bind(this),        1*10*1000),random(0,1*10*1000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
+     // setTimeout(()=>setInterval(this.getConfig.bind(this),          1*10*1000),random(0,1*10*1000)); //impatto minimo
+     // setTimeout(()=>setInterval(this.getArea.bind(this),            1*10*1000),random(0,1*10*1000)); //alto impatto carico aumenta fino a 5 fermo
+     // setTimeout(()=>setInterval(this.getCommands.bind(this),        1*10*1000),random(0,1*10*1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
+     // setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*10*1000),random(0,1*10*1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
+     setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*10*1000),random(0,1*10*1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
+     // setTimeout(()=>setInterval(this.getReservations.bind(this),    1*10*1000),random(0,1*10*1000)); //ogni 2 sec con pm2 load 0.30
+     // setTimeout(()=>setInterval(this.getPois.bind(this),            1*10*1000),random(0,1*10*1000));
 };
 
 

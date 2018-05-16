@@ -29,6 +29,7 @@ return {
             id: 0,
             id_veicolo: "XH123KM",
             address_beginning: "",
+            address_end: "",
             id_cliente: 0,
             ora: 0,
             km: 0,
@@ -56,7 +57,6 @@ return {
         return template
     },
     validateEvents: function (req,res){
-        //logReq(req);
 
         if(
             (typeof req.params.event_time === 'undefined')
@@ -97,8 +97,50 @@ return {
             return true;
         }
     },
+    validateConfig: function (req,res){
+
+        if(
+            (typeof req.params.car_plate === 'undefined')
+
+        ){
+            console.log('\n+++++++++++++++++\nvalidation error\n');
+            console.log(req.params);
+            sendOutJSON(res,400,'Invalid Config parameters',null);
+            return false;
+        }else{
+            return true;
+        }
+    },
+    validateCommands: function (req,res){
+
+        if(
+            (typeof req.params.car_plate === 'undefined')
+
+        ){
+            console.log('\n+++++++++++++++++\nvalidation error\n');
+            console.log(req.params);
+            sendOutJSON(res,400,'Invalid Commands parameters',null);
+            return false;
+        }else{
+            return true;
+        }
+    },
+    validateReservation: function (req,res){
+
+        if(
+            (typeof req.params.car_plate === 'undefined') &&
+            (typeof req.params.consumed === 'undefined')
+
+        ){
+            console.log('\n+++++++++++++++++\nvalidation error\n');
+            console.log(req.params);
+            sendOutJSON(res,400,'Invalid Reservation parameters',null);
+            return false;
+        }else{
+            return true;
+        }
+    },
     validateTrips: function (req,res){
-        //logReq(req);
 
        /* if(
             (typeof req.params.cmd === 'undefined')

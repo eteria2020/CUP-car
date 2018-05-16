@@ -223,12 +223,12 @@ function registerServer(server) {
     );
 
     server.get(
-        {path: '/reservation/:plate', version: '1.0.0'},
+        {path: '/reservation', version: '1.0.0'},
         funcs.getReservation
     );
 
     server.get(
-        {path: '/commands/:plate', version: '1.0.0'},
+        {path: '/commands', version: '1.0.0'},
         funcs.getCommands
     );
 
@@ -237,25 +237,11 @@ function registerServer(server) {
         funcs.getArea
     );
 
-    /*server.get(
-        {path: '/commands', version: '1.0.0'},
-        funcs.getCommands
-    );
-
-    server.get(
-        {path: '/trip', version: '1.0.0'},
-        funcs.getTrip
-    );
-
-    server.get(
-        {path: '/zone', version: '1.0.0'},
-        funcs.getZone
-    );
 
     server.get(
         {path: '/pois', version: '1.0.0'},
-        funcs.getPoi
-    );*/
+        funcs.getPois
+    );
 
 	server.get(
         {path: '/whitelist', version: '1.0.0'},

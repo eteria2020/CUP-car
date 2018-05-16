@@ -55,7 +55,7 @@ function generateEvents(label, car) {
         case "SOS":
             event.event_id = 9;
             event.label = label;
-            event.intval = 1;
+            event.intval = 0;
             event.txtval = '3203589044';
             event.json_data = 'null';
             break;
