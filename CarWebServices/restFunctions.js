@@ -200,7 +200,7 @@ function init (opt) {
                                  //outJson = JSON.stringify(result.rows);
                              }
                              //log.d(result.rows);
-                             res.send(result.rows);
+                             sendOutJSON(res,200,null,result.rows);//res.send(result.rows);
 
                          }
                      }
@@ -450,9 +450,10 @@ function init (opt) {
                              json_md5 = crypto.createHash('md5').update(JSON.stringify(response)).digest("hex"); //Hash(response, {algorithm: 'md5',encoding: 'hex'});
 
                              if (typeof req.params.md5 !== 'undefined' && req.params.md5!==null && req.params.md5!==json_md5) {
-                                 res.send(response);
+                                 sendOutJSON(res,200,null,response)
+                             }else {
+                                 sendOutJSON(res,200,null,[])
                              }
-                             res.send();
 
                          }
                      }
@@ -502,7 +503,7 @@ function init (opt) {
                                   configs[result.rows[i].key] = result.rows[i].value;
     			                }
     			            }
-    			            res.send(200,configs);
+    			            sendOutJSON(res,200,null,configs);//res.send(200,configs);
                         }
 		        	}
 		        );
@@ -649,6 +650,69 @@ function init (opt) {
 		 return next();
 	 },
 
+     getWhitelistNew: function(req, res, next) {
+         //if(sanitizeInput(req,res)){
+         pg.connect(conString, function(err, client, done) {
+
+             if (pgError(err, client)) {
+                 responseError(res, err);
+                 return next(false);
+             }
+
+             var query =
+                 "SELECT " +
+                 "id as i," +
+                 "name as n," +
+                 "surname as c," +
+                 "mobile as t ," +
+                 "enabled as a," +
+                 "CASE WHEN maintainer=true THEN 'sharengo' ELSE ''  END as id," + // infoDisplay
+                 "substring(md5(cast(pin->'primary' as text)) for 8) as p," +
+                 "pin as ps," +
+                 "card_code as cc," +
+                 "update_id  as tm " +
+                 " FROM customers  " +
+                 " WHERE update_id > $1 " +
+                 " ORDER BY update_id " +
+                 " LIMIT 2000";
+
+             var params = [];
+             if (typeof req.params.lastupdate === 'undefined')
+                 params = [0];
+             else
+                 params = [req.params.lastupdate];
+
+             client.query(
+                 query,
+                 params,
+                 function(err, result) {
+                     if (pgError(err, client)) {
+                         responseError(res, err);
+                     } else {
+                         done();
+                         if (typeof result !== 'undefined') {
+                             result.rows.forEach(function(item) {
+                                 // For each row compute hash for each possible pin
+                                 var a = ["primary", "secondary", "company"];
+                                 a.forEach(function(key) {
+                                     if (item.ps[key]) {
+                                         var p = "" + item.ps[key];
+                                         item.ps[key] = crypto.createHash('md5').update(p).digest("hex").substring(0, 8);
+                                     }
+                                 });
+                             });
+                         }
+                         res.header('content-type', 'application/json');
+                         //res.send(200, result.rows);
+                         sendOutJSON(res,200,null,result.rows);
+                     }
+                 }
+             );
+         });
+         //}
+         return next();
+     },
+
 
      /**
       * get pois
@@ -728,6 +792,35 @@ function init (opt) {
 		 });
 		 return next();
 	 },
+         getBusinessEmployeesNew: function (req, res, next) {
+             pg.connect(conString, function (err, client, done) {
+
+                 if (pgError(err, client)) {
+                     responseError(res, err);
+                     return next(false);
+                 }
+
+                 var query = "SELECT " +
+                     "employee_id as id, business_code as codice_azienda, business.is_enabled as azienda_abilitata, time_limits as limite_orari " +
+                     "FROM business.business_employee JOIN business.business ON (business_code = code) " +
+                     "WHERE status = 'approved'";
+                 client.query(
+                     query,
+                     [],
+                     function (err, result) {
+                         if (pgError(err, client)) {
+                             responseError(res, err);
+                         } else {
+                             done();
+                             res.header('content-type', 'application/json');
+                             //res.send(200, result.rows);
+                             sendOutJSON(res,200,null,result.rows);
+                         }
+                     }
+                 );
+             });
+             return next();
+         },
 
 /* / GET */
 

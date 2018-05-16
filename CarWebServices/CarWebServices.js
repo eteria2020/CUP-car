@@ -247,13 +247,24 @@ function registerServer(server) {
         {path: '/whitelist', version: '1.0.0'},
 		funcs.getWhitelist
 	);
-	  server.get({ path: '/whitelist2', version: '1.0.0' },
-		  funcs.getWhitelist2
-	  );
+
+    server.get({ path: '/whitelist2', version: '1.0.0' },
+      funcs.getWhitelist2
+    );
+
+    server.get(
+        {path: '/v2/whitelist', version: '1.0.0'},
+        funcs.getWhitelistNew
+    );
 
     server.get(
         {path: '/business-employees', version: '1.0.0'},
         funcs.getBusinessEmployees
+    );
+
+    server.get(
+        {path: '/v2/business-employees', version: '1.0.0'},
+        funcs.getBusinessEmployeesNew
     );
 }
 
