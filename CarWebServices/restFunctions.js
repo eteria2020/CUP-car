@@ -136,7 +136,7 @@ function init (opt) {
 
                  }else{
 
-                     query = "UPDATE reservations SET consumed_ts = now() , active = false WHERE id = $1 RETURNING id, active, consumed_ts";
+                     query = "UPDATE reservations SET consumed_ts = now() , active = false WHERE id = $1 RETURNING  id, cards , extract(epoch from beginning_ts) as time,  length  , active ";
 
                      var params = [req.params.consumed];
                      var resId = [];
