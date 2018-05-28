@@ -62,12 +62,12 @@ return {
             (typeof req.params.event_time === 'undefined' && isNaN(parseFloat(req.params.event_time)))
             ||
             (typeof req.params.event_id === 'undefined' && isNaN(parseFloat(req.params.event_time)))
-            // ||
-            // (typeof req.params.customer_id === 'undefined')//OPTIONAL
+            ||
+            (typeof req.params.customer_id === 'undefined' && isNaN(parseFloat(req.params.customer_id)))//OPTIONAL
             ||
             (typeof req.params.car_plate === 'undefined')
-            // ||
-            // (typeof req.params.trip_id === 'undefined')//OPTIONAL
+            ||
+             (typeof req.params.trip_id === 'undefined' && isNaN(parseFloat(req.params.trip_id)))//OPTIONAL
             ||
             (typeof req.params.label === 'undefined')
             ||
@@ -80,8 +80,8 @@ return {
             (typeof req.params.lat === 'undefined' && isNaN(parseFloat(req.params.event_time)))
             ||
             (typeof req.params.lon === 'undefined' && isNaN(parseFloat(req.params.event_time)))
-            // ||
-            // (typeof req.params.km === 'undefined')//OPTIONAL
+            ||
+            (typeof req.params.km === 'undefined' && isNaN(parseFloat(req.params.event_time)))//OPTIONAL
             ||
             (typeof req.params.battery === 'undefined' && isNaN(parseFloat(req.params.event_time)))
         // ||
@@ -98,8 +98,17 @@ return {
             req.params.event_id = parseFloat(req.params.event_id);
             req.params.intval = parseFloat(req.params.intval);
             req.params.lat = parseFloat(req.params.lat);
+            if(req.params.lat==0) {
+                req.params.lat = 0.0;
+            }
             req.params.lon = parseFloat(req.params.lon);
+            if(req.params.lon==0) {
+                req.params.lon = 0.0;
+            }
             req.params.battery = parseFloat(req.params.battery);
+            req.params.customer_id = parseFloat(req.params.customer_id);
+            req.params.trip_id = parseFloat(req.params.trip_id);
+            req.params.km = parseFloat(req.params.km);
 
             return true;
         }

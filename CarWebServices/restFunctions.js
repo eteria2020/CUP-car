@@ -231,6 +231,7 @@ function init (opt) {
              var response = {
                  result: 0
              };
+             console.log(event);
 
              MongoClient.connect(mongoUrl, function(err, db) {
                  if (err) {
