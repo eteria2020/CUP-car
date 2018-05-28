@@ -66,8 +66,8 @@ return {
             (typeof req.params.customer_id === 'undefined' && isNaN(parseFloat(req.params.customer_id)))//OPTIONAL
             ||
             (typeof req.params.car_plate === 'undefined')
-            ||
-             (typeof req.params.trip_id === 'undefined' && isNaN(parseFloat(req.params.trip_id)))//OPTIONAL
+            // ||
+            //  (typeof req.params.trip_id === 'undefined' && isNaN(parseFloat(req.params.trip_id)))//OPTIONAL
             ||
             (typeof req.params.label === 'undefined')
             ||
@@ -107,7 +107,7 @@ return {
             }
             req.params.battery = parseFloat(req.params.battery);
             req.params.customer_id = parseFloat(req.params.customer_id);
-            req.params.trip_id = parseFloat(req.params.trip_id);
+            // req.params.trip_id = parseFloat(req.params.trip_id);
             req.params.km = parseFloat(req.params.km);
 
             return true;
