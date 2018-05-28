@@ -59,9 +59,9 @@ return {
     validateEvents: function (req,res){
 
         if(
-            (typeof req.params.event_time === 'undefined')
+            (typeof req.params.event_time === 'undefined' && isNaN(parseFloat(req.params.event_time)))
             ||
-            (typeof req.params.event_id === 'undefined')
+            (typeof req.params.event_id === 'undefined' && isNaN(parseFloat(req.params.event_time)))
             // ||
             // (typeof req.params.customer_id === 'undefined')//OPTIONAL
             ||
@@ -71,19 +71,19 @@ return {
             ||
             (typeof req.params.label === 'undefined')
             ||
-            (typeof req.params.intval === 'undefined')
+            (typeof req.params.intval === 'undefined' && isNaN(parseFloat(req.params.event_time)))
             ||
             (typeof req.params.txtval === 'undefined')
             ||
             // (typeof req.params.level === 'undefined')//OPTIONAL
             // ||
-            (typeof req.params.lat === 'undefined')
+            (typeof req.params.lat === 'undefined' && isNaN(parseFloat(req.params.event_time)))
             ||
-            (typeof req.params.lon === 'undefined')
+            (typeof req.params.lon === 'undefined' && isNaN(parseFloat(req.params.event_time)))
             // ||
             // (typeof req.params.km === 'undefined')//OPTIONAL
             ||
-            (typeof req.params.battery === 'undefined')
+            (typeof req.params.battery === 'undefined' && isNaN(parseFloat(req.params.event_time)))
         // ||
         // (typeof req.params.imei === 'undefined')//OPTIONAL
         // ||
@@ -94,6 +94,13 @@ return {
             sendOutJSON(res,400,'Invalid Events parameters',null);
             return false;
         }else{
+            req.params.event_time = parseFloat(req.params.event_time);
+            req.params.event_id = parseFloat(req.params.event_id);
+            req.params.intval = parseFloat(req.params.intval);
+            req.params.lat = parseFloat(req.params.lat);
+            req.params.lon = parseFloat(req.params.lon);
+            req.params.battery = parseFloat(req.params.battery);
+
             return true;
         }
     },
