@@ -37,7 +37,7 @@ return {
             lon: 0,
             lat: 0,
             warning: "",
-            mac: 0,
+            mac: "",
             imei: 0,
             park_seconds: 0,
             n_pin: 1,

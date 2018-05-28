@@ -343,9 +343,14 @@ function init (opt) {
          if (Utility.validateTrips(req, res)) {
              //Begin write MongoLog
              var trip = Utility.fillTemplate(Utility.getTemplateTrip(), req.params);
+             console.log("VERB INIZIO POSTTRIPS " +trip.cmd);
+             console.log("VERB ora " +trip.ora + typeof trip.ora);
+             if(trip.ora<=100000000000)
+                 trip.ora = trip.ora *1000;
              trip.ora = new Date(trip.ora);
+             console.log("VERB ora convertita" +trip.ora);
              switch (trip.cmd) {
-                 case 0:
+                 case '0':
                      //info
 
                      getTripInfo(trip, function (resp) {
@@ -356,16 +361,18 @@ function init (opt) {
                          sendOutJSON(res, 200, reason, resp);
                      });
                      break;
-                 case 1:
+                 case '1':
                      //OPEN TRIP
+                     console.log("VERB OPEN TRIP")
                      openTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);
                      });
 
                      break;
-                 case 2:
+                 case '2':
                      //CLOSE TRIP
 
+                     console.log("VERB close TRIP")
                      closeTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);
                      });
@@ -950,6 +957,8 @@ function init (opt) {
                     logError(err," query was " +query + params + err.stack);
                     error(err);
                 } else {
+
+                    console.log(" VERB query done ");
                     cb(result, error);
 
                 }
@@ -976,6 +985,8 @@ function init (opt) {
     }
 
     function openTrip(trip, cb) {
+
+        console.log(" VERB Excecuting open trip");
 
         var response = {
             result: 0,

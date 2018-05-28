@@ -423,7 +423,7 @@ Car.prototype.sendTrips = function getWitelist(){
 
         })
             .then(response => {
-                //console.log(response.data);
+                console.log(response.data);
                 console.log("trips open " +countTrips++);
                 if(response.data.data.result >0){
                     this.tripResponse = response.data.data.result;
@@ -536,8 +536,8 @@ Car.prototype.run = function() {
      // setTimeout(()=>setInterval(this.getConfig.bind(this),          1*10*1000),random(0,1*10*1000)); //impatto minimo
      // setTimeout(()=>setInterval(this.getArea.bind(this),            1*10*1000),random(0,1*10*1000)); //alto impatto carico aumenta fino a 5 fermo
      // setTimeout(()=>setInterval(this.getCommands.bind(this),        1*10*1000),random(0,1*10*1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
-     // setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*10*1000),random(0,1*10*1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
-     setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*10*1000),random(0,1*10*1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
+      setTimeout(()=>setInterval(this.sendTrips.bind(this),          1*10*1000),random(0,1*10*1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
+     //setTimeout(()=>setInterval(this.sendEvents.bind(this),         1*10*1000),random(0,1*10*1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
      // setTimeout(()=>setInterval(this.getReservations.bind(this),    1*10*1000),random(0,1*10*1000)); //ogni 2 sec con pm2 load 0.30
      // setTimeout(()=>setInterval(this.getPois.bind(this),            1*10*1000),random(0,1*10*1000));
 };
