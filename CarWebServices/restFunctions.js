@@ -362,7 +362,6 @@ function init (opt) {
                      break;
                  case 1:
                      //OPEN TRIP
-                     console.log("OPEN TRIP");
                      openTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);
                      });
@@ -370,7 +369,6 @@ function init (opt) {
                      break;
                  case 2:
                      //CLOSE TRIP
-                     console.log("CLOSE TRIP");
 
                      closeTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);
@@ -959,7 +957,7 @@ function init (opt) {
                     logError(err," query was " +query + params + err.stack);
                     error(err);
                 } else {
-                    console.log("excecuting query " + query);
+                    console.log("excecuting query " + query + params);
                     cb(result, error);
 
                 }
@@ -1001,6 +999,12 @@ function init (opt) {
         var checkIfAlreadySent = "SELECT id, pin_type FROM trips WHERE car_plate = $1 AND timestamp_beginning= $2 AND customer_id = $3";
         var checkIfAlreadySentParams = [trip.id_veicolo, trip.ora, trip.id_cliente];
 
+        var updateTripBusiness = "UPDATE trips SET pin_type = $1  WHERE id = $2";
+        var updateTripBusinessParams = [];
+
+        var insertBusinessTrip = "INSERT INTO business.business_trip (business_code, group_id, trip_id)SELECT business_employee.business_code, business_employee.group_id, $1 FROM business.business_employee WHERE business_employee.employee_id = $2 AND business_employee.status = 'approved'";
+        var insertBusinessTripParams = [];
+
         var checkOtherTripCustomer = "SELECT count(*)  FROM trips WHERE car_plate <> $1 AND customer_id = $2 AND timestamp_end is null";
         var checkOtherTripCustomerParams = [trip.id_veicolo, trip.id_cliente];
 
@@ -1013,11 +1017,40 @@ function init (opt) {
         var client = getClient();
 
         executeQuery(client, checkIfAlreadySent, checkIfAlreadySentParams, function (err) {
-            errorResponse.extra = err.stack;cb(errorResponse);client.end();
+            console.log("Exception in query");errorResponse.extra = err.stack;cb(errorResponse);client.end();
         }, function (res1, err1) {
             //CHECK if trip already sent
+            console.log("After query not already sent "+res1);
             if (res1.rows.length > 0) {//already sent
-                //check if business
+
+                if (trip.n_pin == 100 && res1.rows[0].pin_type !='company') {
+
+                    beginTransaction(client, err1, function (resB, errB) {
+                        var is_business_trip = true;
+                        var pin_type = "company";
+                        updateTripBusinessParams = [pin_type,res1.rows[0].id];
+
+                        executeQuery(client, updateTripBusiness,updateTripBusinessParams,err1,function (resB1, errB1) {
+                            insertBusinessTripParams = [res1.rows[0].id,trip.id_cliente];
+
+                            executeQuery(client, insertBusinessTrip, insertBusinessTripParams, errB1, function (resB2, errB2) {
+                                commitTransaction(client,err4, function (resCom, errCom) {
+                                    response.result = res1.rows[0].id;
+                                    response.message = "Updated business";
+                                    cb(response);
+                                    client.end(); //EXIT
+                                });
+                            });
+                        });
+                });
+
+                } else {
+                    response.result = res1.rows[0].id;
+                    response.message = "Already sent";
+                    cb(response);
+                }
+
+
             } else {
                 //Passing to the new query the same function for error handling I can handle any error with only one function
                 executeQuery(client, checkOtherTripCustomer, checkOtherTripCustomerParams, err1, function (res2, err2) {
