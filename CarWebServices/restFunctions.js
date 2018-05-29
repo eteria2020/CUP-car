@@ -352,7 +352,6 @@ function init (opt) {
              switch (trip.cmd) {
                  case 0:
                      //info
-
                      getTripInfo(trip, function (resp) {
                          //Handle error response
                          var reason = 'No trip found';
@@ -363,6 +362,7 @@ function init (opt) {
                      break;
                  case 1:
                      //OPEN TRIP
+                     console.log("OPEN TRIP");
                      openTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);
                      });
@@ -370,6 +370,7 @@ function init (opt) {
                      break;
                  case 2:
                      //CLOSE TRIP
+                     console.log("CLOSE TRIP");
 
                      closeTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);

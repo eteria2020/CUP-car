@@ -194,7 +194,7 @@ return {
         }else{
 
             req.params.cmd = parseFloat(req.params.cmd);
-            if(typeof req.params.id === 'undefined') {
+            if(typeof req.params.id !== 'undefined') {
                 req.params.id = parseFloat(req.params.id);
             }
             req.params.id_cliente = parseFloat(req.params.id_cliente);
@@ -205,7 +205,7 @@ return {
             req.params.lat = parseFloat(req.params.lat);
             req.params.pulizia_int = parseFloat(req.params.pulizia_int);
             req.params.pulizia_ext = parseFloat(req.params.pulizia_ext);
-            if(typeof req.params.park_seconds === 'undefined') {
+            if(typeof req.params.park_seconds !== 'undefined') {
                 req.params.park_seconds = parseFloat(req.params.park_seconds);
             }
             req.params.n_pin = parseFloat(req.params.n_pin);
