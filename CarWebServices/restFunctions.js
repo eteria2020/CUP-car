@@ -959,7 +959,7 @@ function init (opt) {
                     logError(err," query was " +query + params + err.stack);
                     error(err);
                 } else {
-
+                    console.log("excecuting query " + query);
                     cb(result, error);
 
                 }
