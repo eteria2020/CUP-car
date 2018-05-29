@@ -212,18 +212,22 @@ function registerServer(server) {
         {path: '/configs', version: '1.0.0'},
         funcs.getConfigs
     );
+    server.get(
+        {path: '/v2/configs', version: '1.0.0'},
+        funcs.getConfigsNew
+    );
     server.post(
-        {path: '/events', version: '1.0.0'},
+        {path: '/v2/events', version: '1.0.0'},
         funcs.postEvents
     );
 
     server.post(
-        {path: '/trips', version: '1.0.0'},
+        {path: '/v2/trips', version: '1.0.0'},
         funcs.postTrips
     );
 
     server.get(
-        {path: '/reservation', version: '1.0.0'},
+        {path: '/v2/reservation', version: '1.0.0'},
         funcs.getReservation
     );
 
@@ -233,13 +237,18 @@ function registerServer(server) {
     );
 
     server.get(
-        {path: '/area', version: '1.0.0'},
+        {path: '/v2/commands', version: '1.0.0'},
+        funcs.getCommandsNew
+    );
+
+    server.get(
+        {path: '/v2/area', version: '1.0.0'},
         funcs.getArea
     );
 
 
     server.get(
-        {path: '/pois', version: '1.0.0'},
+        {path: '/v2/pois', version: '1.0.0'},
         funcs.getPois
     );
 

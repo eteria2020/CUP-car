@@ -200,7 +200,7 @@ function init (opt) {
                                  //outJson = JSON.stringify(result.rows);
                              }
                              //log.d(result.rows);
-                             sendOutJSON(res,200,null,result.rows);//res.send(result.rows);
+                            res.send(result.rows);
 
                          }
                      }
@@ -210,6 +210,49 @@ function init (opt) {
          }
          //return next();
      },
+
+         /**
+          * get Commands
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getCommandsNew: function(req, res, next) {
+             next();
+             if(Utility.validateCommands(req,res)){
+                 pg.connect(conString, function(err, client, done) {
+
+                     if (pgError(err, client)) {
+                         responseError(res, err);
+                         return;// next(false);
+                     }
+                     query = "UPDATE commands SET to_send = false WHERE car_plate = $1 and to_send = true RETURNING id, command , intarg1, intarg2, txtarg1, txtarg2, extract(epoch from queued) as queued, ttl, payload";
+
+
+                     var params = [req.params.car_plate];
+
+                     client.query(
+                         query,
+                         params,
+                         function (err, result) {
+                             done();
+                             if (pgError(err, client)) {
+                                 responseError(res, err);
+                             } else {
+                                 if ((typeof result !== 'undefined')) {
+                                     //outJson = JSON.stringify(result.rows);
+                                 }
+                                 //log.d(result.rows);
+                                 sendOutJSON(res,200,null,result.rows);//res.send(result.rows);
+
+                             }
+                         }
+                     );
+
+                 });
+             }
+             //return next();
+         },
 
      /**
       * get Events
@@ -510,7 +553,7 @@ function init (opt) {
                                   configs[result.rows[i].key] = result.rows[i].value;
     			                }
     			            }
-    			            sendOutJSON(res,200,null,configs);//res.send(200,configs);
+    			            res.send(200,configs);
                         }
 		        	}
 		        );
@@ -518,6 +561,52 @@ function init (opt) {
 		}
 	},
 
+
+         /**
+          * get pois
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getConfigsNew: function(req, res, next) {
+             next();
+             if(Utility.validateConfig(req,res)){
+                 pg.connect(conString, function(err, client, done) {
+
+                     if (pgError(err,client)) {
+                         responseError(res,err);
+                         return ;//next(false);
+                     }
+
+                     var query = " SELECT * FROM cars_configurations " +
+                         " WHERE car_plate=$1 OR fleet_id= (SELECT fleet_id FROM cars WHERE plate=$1) " +
+                         " OR (fleet_id is null AND model is null AND car_plate is null) " +
+                         " ORDER BY key, car_plate DESC , model DESC, fleet_id DESC ";
+
+                     var params = [req.params.car_plate];
+
+                     client.query(
+                         query,
+                         params,
+                         function(err, result) {
+                             if (pgError(err,client)) {
+                                 responseError(res,err);
+                             } else {
+                                 done();
+                                 var configs = {};
+                                 if((typeof result !== 'undefined')){
+                                     for(i=0;i<result.rows.length; i++) {
+                                         //configs.set(result.rows[i].key, result.rows[i].value);
+                                         configs[result.rows[i].key] = result.rows[i].value;
+                                     }
+                                 }
+                                 sendOutJSON(res,200,null,configs);//res.send(200,configs);
+                             }
+                         }
+                     );
+                 });
+             }
+         },
 
 	 /**
 	  * get pois
