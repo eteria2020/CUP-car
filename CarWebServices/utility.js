@@ -158,42 +158,60 @@ return {
     },
     validateTrips: function (req,res){
 
-       /* if(
-            (typeof req.params.cmd === 'undefined')
+        if(
+            (typeof req.params.cmd === 'undefined' && isNaN(parseFloat(req.params.cmd)))
             ||
-            (typeof req.params.id === 'undefined')
+            (typeof req.params.id === 'undefined' && req.params.cmd == 2 && isNaN(parseFloat(req.params.id)))
             ||
             (typeof req.params.id_veicolo === 'undefined')
             ||
-            (typeof req.params.id_cliente === 'undefined')
+            (typeof req.params.id_cliente === 'undefined' && isNaN(parseFloat(req.params.id_cliente)))
             ||
-            (typeof req.params.ora === 'undefined')
+            (typeof req.params.ora === 'undefined' && isNaN(parseFloat(req.params.ora)))
             ||
-            (typeof req.params.km === 'undefined')
+            (typeof req.params.km === 'undefined' && isNaN(parseFloat(req.params.km)))
             ||
-            (typeof req.params.carburante === 'undefined')
+            (typeof req.params.carburante === 'undefined' && isNaN(parseFloat(req.params.carburante)))
             ||
-            (typeof req.params.lon === 'undefined')
+            (typeof req.params.lon === 'undefined' && isNaN(parseFloat(req.params.lon)))
             ||
-            (typeof req.params.lat === 'undefined')
+            (typeof req.params.lat === 'undefined' && isNaN(parseFloat(req.params.lat)))
             ||
             (typeof req.params.warning === 'undefined')
             ||
-            (typeof req.params.pulizia_int === 'undefined')
+            (typeof req.params.pulizia_int === 'undefined' && isNaN(parseFloat(req.params.pulizia_int)))
             ||
-            (typeof req.params.pulizia_ext === 'undefined')
+            (typeof req.params.pulizia_ext === 'undefined' && isNaN(parseFloat(req.params.pulizia_ext)))
             ||
-            (typeof req.params.park_seconds === 'undefined')
+            (typeof req.params.park_seconds === 'undefined'  && req.params.cmd == 2 && isNaN(parseFloat(req.params.park_seconds)))
             ||
-            (typeof req.params.n_pin === 'undefined')
+            (typeof req.params.n_pin === 'undefined' && isNaN(parseFloat(req.params.n_pin)))
         ){
             console.log('\n+++++++++++++++++\nvalidation error\n');
             console.log(req.params);
             sendOutJSON(res,400,'Invalid Trips parameters',null);
             return false;
-        }else{*/
+        }else{
+
+            req.params.cmd = parseFloat(req.params.cmd);
+            if(typeof req.params.id === 'undefined') {
+                req.params.id = parseFloat(req.params.id);
+            }
+            req.params.id_cliente = parseFloat(req.params.id_cliente);
+            req.params.ora = parseFloat(req.params.ora);
+            req.params.km = parseFloat(req.params.km);
+            req.params.carburante = parseFloat(req.params.carburante);
+            req.params.lon = parseFloat(req.params.lon);
+            req.params.lat = parseFloat(req.params.lat);
+            req.params.pulizia_int = parseFloat(req.params.pulizia_int);
+            req.params.pulizia_ext = parseFloat(req.params.pulizia_ext);
+            if(typeof req.params.park_seconds === 'undefined') {
+                req.params.park_seconds = parseFloat(req.params.park_seconds);
+            }
+            req.params.n_pin = parseFloat(req.params.n_pin);
+
             return true;
-       // }
+        }
     },
 
     getCleanliness: function(event) {

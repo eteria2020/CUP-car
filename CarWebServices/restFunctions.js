@@ -342,16 +342,15 @@ function init (opt) {
          next();
          //sendOutJSON(res,200,null,"ciao")
          if (Utility.validateTrips(req, res)) {
+
+             console.log(req.params);
              //Begin write MongoLog
              var trip = Utility.fillTemplate(Utility.getTemplateTrip(), req.params);
-             console.log("VERB INIZIO POSTTRIPS " +trip.cmd);
-             console.log("VERB ora " +trip.ora + typeof trip.ora);
              if(trip.ora<=100000000000)
                  trip.ora = trip.ora *1000;
              trip.ora = new Date(trip.ora);
-             console.log("VERB ora convertita" +trip.ora);
              switch (trip.cmd) {
-                 case '0':
+                 case 0:
                      //info
 
                      getTripInfo(trip, function (resp) {
@@ -362,18 +361,16 @@ function init (opt) {
                          sendOutJSON(res, 200, reason, resp);
                      });
                      break;
-                 case '1':
+                 case 1:
                      //OPEN TRIP
-                     console.log("VERB OPEN TRIP")
                      openTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);
                      });
 
                      break;
-                 case '2':
+                 case 2:
                      //CLOSE TRIP
 
-                     console.log("VERB close TRIP")
                      closeTrip(trip, function (resp) {
                          sendOutJSON(res, 200, null, resp);
                      });
@@ -382,6 +379,9 @@ function init (opt) {
                      //update trips to set close
                      //check if exist business trip
                      //if payment type is null set trips not payable
+                     break;
+                 default:
+                     sendOutJSON(res,400,'Invalid Trips parameters',null);
                      break;
              }
              //commit transaction
@@ -959,7 +959,6 @@ function init (opt) {
                     error(err);
                 } else {
 
-                    console.log(" VERB query done ");
                     cb(result, error);
 
                 }
@@ -987,7 +986,6 @@ function init (opt) {
 
     function openTrip(trip, cb) {
 
-        console.log(" VERB Excecuting open trip");
 
         var response = {
             result: 0,

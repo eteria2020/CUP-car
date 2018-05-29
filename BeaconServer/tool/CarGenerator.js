@@ -428,7 +428,6 @@ Car.prototype.sendTrips = function getWitelist(){
                 if(response.data.data.result >0){
                     this.tripResponse = response.data.data.result;
                 }else{
-
                     this.tripResponse = response.data.data.extra;
                 }
             })
