@@ -49,7 +49,7 @@ return {
     fillTemplate: function (template, obj)
     {
 
-        for (let key in obj) {
+        for (var key in obj) {
             if(typeof key !== 'undefined' && typeof template !== 'undefined')
             if (template.hasOwnProperty(key))
                 template[key] = obj[key];
@@ -215,12 +215,12 @@ return {
     },
 
     getCleanliness: function(event) {
-        let map = ["clean", "average", "dirty"];
+        var map = ["clean", "average", "dirty"];
         if(typeof event!== 'string')
             return[map[0],map[0]];
-        let cleanliness = event.split(";");
-        let intern = Math.abs(parseInt(cleanliness[0]));
-        let ext = Math.abs(parseInt(cleanliness[1]));
+        var cleanliness = event.split(";");
+        var intern = Math.abs(parseInt(cleanliness[0]));
+        var ext = Math.abs(parseInt(cleanliness[1]));
         if(cleanliness.length === 2 && !isNaN(intern) && intern < 3 && !isNaN(ext) && ext < 3){
             return[map[intern], map[ext]]
         }else {

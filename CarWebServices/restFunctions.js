@@ -1,10 +1,12 @@
-const crypto = require('crypto');
+var crypto = require('crypto');
 
-const MongoClient = require('mongodb').MongoClient;
+var MongoClient = require('mongodb').MongoClient;
 
-const { Pool, Client } = require('pg')
+var _require = require('pg'),
+    Pool = _require.Pool,
+    Client = _require.Client;
 
-const Utility = require('./utility.js')();
+var Utility = require('./utility.js')();
 
 module.exports = init
 

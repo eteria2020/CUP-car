@@ -1,6 +1,7 @@
-const { Pool } = require('pg')
+var _require = require('pg'),
+    Pool = _require.Pool;
 
-const pool = new Pool({
+var pool = new Pool({
     user: 'sharengo',
     host: '127.0.0.1',
     database: 'sharengo',

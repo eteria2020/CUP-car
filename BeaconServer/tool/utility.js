@@ -1,15 +1,15 @@
-module.exports ={
-    generateEvents,
-    generateRandomEvents,
-    generatePHPEvents,
-    generatePHPRandomEvents
+'use strict';
+
+module.exports = {
+    generateEvents: generateEvents,
+    generateRandomEvents: generateRandomEvents,
+    generatePHPEvents: generatePHPEvents,
+    generatePHPRandomEvents: generatePHPRandomEvents
 };
-
-
 
 function generateEvents(label, car) {
 
-    let event = {
+    var event = {
 
         car_plate: car.plate,
         customer_id: 26740,
@@ -74,33 +74,32 @@ function generateEvents(label, car) {
             event.json_data = 'null';
             break;
 
-
     }
 
     return event;
 }
 function generateRandomEvents(car) {
-    let eventsLabel = ["CHARGE", "SW_BOOT", "SELFCLOSE", "CLEANLINESS", "SOS", "SHUTDOWN", "CAN_ANOMALIES"];
-    return generateEvents(eventsLabel[random(0,eventsLabel.length)],car);
+    var eventsLabel = ["CHARGE", "SW_BOOT", "SELFCLOSE", "CLEANLINESS", "SOS", "SHUTDOWN", "CAN_ANOMALIES"];
+    return generateEvents(eventsLabel[random(0, eventsLabel.length)], car);
 }
 
 function generatePHPEvents(label, car) {
 
-    let event = {
-            params:{
+    var event = {
+        params: {
 
-                car_plate: car.plate,
-                customer_id: 26740,
-                trip_id: car.tripResponse,
-                event_time: new Date().getTime(),
-                lon: 9.182768666666668,
-                lat: 45.45682866666666,
-                km: 22016,
-                level: 0,
-                battery: 61,
-                imei: 861311004993399
-                }
-            };
+            car_plate: car.plate,
+            customer_id: 26740,
+            trip_id: car.tripResponse,
+            event_time: new Date().getTime(),
+            lon: 9.182768666666668,
+            lat: 45.45682866666666,
+            km: 22016,
+            level: 0,
+            battery: 61,
+            imei: 861311004993399
+        }
+    };
 
     switch (label) {
         case "CHARGE":
@@ -153,18 +152,16 @@ function generatePHPEvents(label, car) {
             event.json_data = 'null';
             break;
 
-
     }
 
     return event;
 }
 
 function generatePHPRandomEvents(car) {
-    let eventsLabel = ["CHARGE", "SW_BOOT", "SELFCLOSE", "CLEANLINESS", "SOS", "SHUTDOWN", "CAN_ANOMALIES"];
-    return generatePHPEvents(eventsLabel[random(0,eventsLabel.length)],car);
+    var eventsLabel = ["CHARGE", "SW_BOOT", "SELFCLOSE", "CLEANLINESS", "SOS", "SHUTDOWN", "CAN_ANOMALIES"];
+    return generatePHPEvents(eventsLabel[random(0, eventsLabel.length)], car);
 }
 
 function random(low, high) {
     return Math.floor(Math.random() * (high - low) + low);
 }
-
