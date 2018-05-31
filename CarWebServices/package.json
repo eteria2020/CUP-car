@@ -26,6 +26,7 @@
     "pg-native": "^1.10.0",
     "restify": "^4.0.3",
     "validator": "^4.5.2",
-    "bunyan": "^1.4.0"
+    "bunyan": "^1.4.0",
+    "pg-connection-string":"^2.0.0"
   }
 }

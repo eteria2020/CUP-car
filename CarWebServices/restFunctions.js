@@ -7,6 +7,7 @@ var _require = require('pg'),
     Client = _require.Client;
 
 var Utility = require('./utility.js')();
+var parse = require('pg-connection-string').parse;
 
 module.exports = init
 
@@ -998,13 +999,8 @@ function init (opt) {
 };
 
      function getClient(){
-         var client = new Client({
-             user: 'sharengo',
-             host: '127.0.0.1',
-             database: 'sharengo',
-             password: 'Sharengo1',
-             port: 5432,
-         });
+         var config = parse(conString);
+         var client = new Client(config);
          client.connect();
 
          return client;
