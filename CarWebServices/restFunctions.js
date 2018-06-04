@@ -178,49 +178,6 @@ function init (opt) {
       * @param  function next handler
       */
      getCommands: function(req, res, next) {
-         next();
-         if(Utility.validateCommands(req,res)){
-             pg.connect(conString, function(err, client, done) {
-
-                 if (pgError(err, client)) {
-                     responseError(res, err);
-                     return;// next(false);
-                 }
-                 query = "UPDATE commands SET to_send = false WHERE car_plate = $1 and to_send = true RETURNING id, command , intarg1, intarg2, txtarg1, txtarg2, extract(epoch from queued) as queued, ttl, payload";
-
-
-                 var params = [req.params.car_plate];
-
-                 client.query(
-                     query,
-                     params,
-                     function (err, result) {
-                         done();
-                         if (pgError(err, client)) {
-                             responseError(res, err);
-                         } else {
-                             if ((typeof result !== 'undefined')) {
-                                 //outJson = JSON.stringify(result.rows);
-                             }
-                             //log.d(result.rows);
-                            res.send(result.rows);
-
-                         }
-                     }
-                 );
-
-             });
-         }
-         //return next();
-     },
-
-         /**
-          * get Commands
-          * @param  array   req  request
-          * @param  array   res  response
-          * @param  function next handler
-          */
-         getCommandsNew: function(req, res, next) {
              next();
              if(Utility.validateCommands(req,res)){
                  pg.connect(conString, function(err, client, done) {
@@ -565,13 +522,13 @@ function init (opt) {
 	},
 
 
-         /**
-          * get pois
-          * @param  array   req  request
-          * @param  array   res  response
-          * @param  function next handler
-          */
-         getConfigsNew: function(req, res, next) {
+     /**
+      * get pois
+      * @param  array   req  request
+      * @param  array   res  response
+      * @param  function next handler
+      */
+     getConfigsNew: function(req, res, next) {
              next();
              if(Utility.validateConfig(req,res)){
                  pg.connect(conString, function(err, client, done) {
@@ -891,7 +848,7 @@ function init (opt) {
 		 });
 		 return next();
 	 },
-         getBusinessEmployeesNew: function (req, res, next) {
+     getBusinessEmployeesNew: function (req, res, next) {
              pg.connect(conString, function (err, client, done) {
 
                  if (pgError(err, client)) {

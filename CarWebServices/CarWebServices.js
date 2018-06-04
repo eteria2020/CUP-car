@@ -231,14 +231,10 @@ function registerServer(server) {
         funcs.getReservation
     );
 
-    server.get(
-        {path: '/commands', version: '1.0.0'},
-        funcs.getCommands
-    );
 
     server.get(
         {path: '/v2/commands', version: '1.0.0'},
-        funcs.getCommandsNew
+        funcs.getCommands
     );
 
     server.get(
