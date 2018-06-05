@@ -50,7 +50,6 @@ try {
 }
 
 var conString =         config.pgDb || globalConfig.pgDb;
-var conStringNonNative= config.pgDbNonNative || globalConfig.pgDb;
 var mongoUrl =          config.mongoDB || globalConfig.mongoUrl;
 var redisServer =       config.redisServer || globalConfig.redisServer;
 var redisDb =           config.redisDb;
@@ -69,7 +68,7 @@ var restify = require('restify');
 
 var pg = require('pg').native;
 pg.defaults.poolSize = 50;
-pg.defaults.poolIdleTimeout=1000; // 5 sec
+pg.defaults.poolIdleTimeout=1000; // 1 sec
 
 var morgan = require('morgan');
 fs.existsSync(logPath) || fs.mkdirSync(logPath)

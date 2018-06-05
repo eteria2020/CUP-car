@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var request = require('request');
 
 var MongoClient = require('mongodb').MongoClient;
 
@@ -234,7 +235,7 @@ function init (opt) {
              var response = {
                  result: 0
              };
-             console.log(event);
+             //console.log(event);
 
              MongoClient.connect(mongoUrl, function(err, db) {
                  if (err) {
@@ -352,40 +353,45 @@ function init (opt) {
              if(trip.ora<=100000000000)
                  trip.ora = trip.ora *1000;
              trip.ora = new Date(trip.ora);
-             switch (trip.cmd) {
-                 case 0:
-                     //info
-                     getTripInfo(trip, function (resp) {
-                         //Handle error response
-                         var reason = 'No trip found';
-                         if (resp.length > 0) reason = 'Found Trip';
+             getAddressFromCoordinates(trip, function (address) {
+                 switch (trip.cmd) {
+                     case 0:
+                         //info
+                         getTripInfo(trip, function (resp) {
+                             //Handle error response
+                             var reason = 'No trip found';
+                             if (resp.length > 0) reason = 'Found Trip';
 
-                         sendOutJSON(res, 200, reason, resp);
-                     });
-                     break;
-                 case 1:
-                     //OPEN TRIP
-                     openTrip(trip, function (resp) {
-                         sendOutJSON(res, 200, null, resp);
-                     });
+                             sendOutJSON(res, 200, reason, resp);
+                         });
+                         break;
+                     case 1:
+                         trip.address_beginning = address;
+                         //OPEN TRIP
+                         openTrip(trip, function (resp) {
+                             sendOutJSON(res, 200, null, resp);
+                         });
 
-                     break;
-                 case 2:
-                     //CLOSE TRIP
+                         break;
+                     case 2:
+                         //CLOSE TRIP
+                         trip.address_end = address;
 
-                     closeTrip(trip, function (resp) {
-                         sendOutJSON(res, 200, null, resp);
-                     });
-                     //check if exist trip with id, car and customer
-                     //check if exist trip close with id to update data
-                     //update trips to set close
-                     //check if exist business trip
-                     //if payment type is null set trips not payable
-                     break;
-                 default:
-                     sendOutJSON(res,400,'Invalid Trips parameters',null);
-                     break;
-             }
+                         closeTrip(trip, function (resp) {
+                             sendOutJSON(res, 200, null, resp);
+                         });
+                         //check if exist trip with id, car and customer
+                         //check if exist trip close with id to update data
+                         //update trips to set close
+                         //check if exist business trip
+                         //if payment type is null set trips not payable
+                         break;
+                     default:
+                         sendOutJSON(res,400,'Invalid Trips parameters',null);
+                         break;
+                 }
+             });
+
              //commit transaction
 
          }
@@ -1001,7 +1007,7 @@ function init (opt) {
                     logError(err," query was " +query + params + err.stack);
                     error(err);
                 } else {
-                    console.log("excecuting query " + query + params);
+                    //console.log("excecuting query " + query + params);
                     cb(result, error);
 
                 }
@@ -1064,7 +1070,6 @@ function init (opt) {
             console.log("Exception in query");errorResponse.extra = err.stack;cb(errorResponse);client.end();
         }, function (res1, err1) {
             //CHECK if trip already sent
-            console.log("After query not already sent "+res1);
             if (res1.rows.length > 0) {//already sent
 
                 if (trip.n_pin == 100 && res1.rows[0].pin_type !='company') {
@@ -1105,7 +1110,8 @@ function init (opt) {
                     }
                     executeQuery(client, checkIfTripPayable, checkIfTripPayableParams, err2, function (res3, err3) {
                         //check if trip should be payable
-                        payable = res3.rows[0].gold_list;
+                        payable = !res3.rows[0].gold_list;
+                        insertTripParams[7] = payable; //Update payable value
                         beginTransaction(client, err3, function (res4, err4) {
                             executeQuery(client, insertTrip, insertTripParams, err4, function (res5, err5) {
                                 //insertTrip
@@ -1224,6 +1230,50 @@ function init (opt) {
                     }
                 });
             }
+        });
+    }
+
+
+
+
+
+    function getAddressFromCoordinates(trip, cb) {
+
+        var url = "http://maps.sharengo.it/reverse.php?format=json&zoom=18&addressdetails=1&lon=" + trip.lon + "&lat=" + trip.lat;
+
+        console.log("Executing http call to retrieve address" +url);
+
+        request({
+            url: url,
+            timeout: 5000 // 5 sec
+        }, function (error, response, body) {
+          /*console.log('error:'+ error); // Print the error if one occurred
+          console.log('statusCode:'+ response + response.statusCode); // Print the response status code if a response was received
+          console.log('body:' + body); // Print the HTML for the Google homepage.*/
+
+        try {
+            if(error || response.statusCode !=200) {
+                return cb('');
+            }
+
+            var jsondata = JSON.parse(body);
+
+            var road = (typeof jsondata.address.road !== 'undefined') ? jsondata.address.road : (typeof jsondata.address.pedestrian !== 'undefined') ? jsondata.address.pedestrian : '';
+
+            var city = (typeof jsondata.address.town !== 'undefined') ? jsondata.address.town : jsondata.address.city;
+
+            var county = (typeof jsondata.address.county !== 'undefined') ? jsondata.address.county : '';
+
+            var address =
+                ((road !== '') ? road + ', ' : '') +
+                ((city !== '') ? city + ', ' : '') +
+                ((county !== '') ? county : '');
+
+            return cb(address);
+        }catch  (e) {
+            console.log("Exception while executing getAddressFromCoordinates" +e);
+            return cb('');
+        }
         });
     }
 
