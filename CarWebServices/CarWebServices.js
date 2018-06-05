@@ -50,6 +50,7 @@ try {
 }
 
 var conString =         config.pgDb || globalConfig.pgDb;
+var mongoUrl =          config.mongoDB || globalConfig.mongoUrl;
 var redisServer =       config.redisServer || globalConfig.redisServer;
 var redisDb =           config.redisDb;
 var logPath =           config.logPath || globalConfig.logPath;
@@ -66,8 +67,8 @@ var redisCluster =      globalConfig.redisCluster || [];
 var restify = require('restify');
 
 var pg = require('pg').native;
-pg.defaults.poolSize = 25;
-pg.defaults.poolIdleTimeout=5000; // 5 sec
+pg.defaults.poolSize = 50;
+pg.defaults.poolIdleTimeout=1000; // 1 sec
 
 var morgan = require('morgan');
 fs.existsSync(logPath) || fs.mkdirSync(logPath)
@@ -95,7 +96,7 @@ var dlog = {
 var server;
 var unsecureServer;
 
-var funcs = require('./restFunctions')( {pg: pg , conString: conString, validator: validator});
+var funcs = require('./restFunctions')( {pg: pg, conString: conString, validator: validator, log:dlog, mongoUrl :mongoUrl});
 
 
 // Local functions
@@ -144,8 +145,8 @@ function registerServer(server) {
 	server.use(restify.gzipResponse());
 	server.use(restify.bodyParser());
 	server.use(restify.throttle({
-	    burst: 32,
-	    rate: 200,
+	    burst: 32,//32
+	    rate: 200,//200
 	    ip: true,
 	    /*overrides: {
 		    '192.168.1.1': {
@@ -206,22 +207,68 @@ function registerServer(server) {
 	);
 	*/
 
-	server.get(
+    server.get(
         {path: '/configs', version: '1.0.0'},
-		funcs.getConfigs
-	);
+        funcs.getConfigs
+    );
+    server.get(
+        {path: '/v2/configs', version: '1.0.0'},
+        funcs.getConfigsNew
+    );
+    server.post(
+        {path: '/v2/events', version: '1.0.0'},
+        funcs.postEvents
+    );
+
+    server.post(
+        {path: '/v2/trips', version: '1.0.0'},
+        funcs.postTrips
+    );
+
+    server.get(
+        {path: '/v2/reservation', version: '1.0.0'},
+        funcs.getReservation
+    );
+
+
+    server.get(
+        {path: '/v2/commands', version: '1.0.0'},
+        funcs.getCommands
+    );
+
+    server.get(
+        {path: '/v2/area', version: '1.0.0'},
+        funcs.getArea
+    );
+
+
+    server.get(
+        {path: '/v2/pois', version: '1.0.0'},
+        funcs.getPois
+    );
 
 	server.get(
         {path: '/whitelist', version: '1.0.0'},
 		funcs.getWhitelist
 	);
-  server.get({ path: '/whitelist2', version: '1.0.0' },
+
+    server.get({ path: '/whitelist2', version: '1.0.0' },
       funcs.getWhitelist2
-  );
+    );
+
+    server.get(
+        {path: '/v2/whitelist', version: '1.0.0'},
+        funcs.getWhitelistNew
+    );
 
     server.get(
         {path: '/business-employees', version: '1.0.0'},
         funcs.getBusinessEmployees
+    );
+
+    server.get(
+        {path: '/v2/business-employees', version: '1.0.0'},
+        funcs.getBusinessEmployeesNew
     );
 }
 

@@ -431,7 +431,7 @@ function updateCar(callback,obj,id,job) {
    if (obj.hasOwnProperty('gps_info') && obj.gps_info!=null)
         fields += ', gps_data=:gps_info';
 
-   if (obj.hasOwnProperty('PPStatus') && obj.gps_info!=null)
+   if (obj.hasOwnProperty('PPStatus'))
         fields += ', plug=:PPStatus';
     
    if (obj.hasOwnProperty('noGPS'))

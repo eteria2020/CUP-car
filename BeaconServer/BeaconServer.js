@@ -293,7 +293,7 @@ function enqueueBeacon(id, xsender, xpayload) {
 
 function startDequeueBeacon() {
   console.log("Start dequeue");
-  jkue.process('beacons', 5,  function (job,ctx,done) {
+  jkue.process('beacons', 50,  function (job,ctx,done) {
        console.log("--Begin JOB: " + job.id + "("+job.title+")");
        beaconparser.process(job.data.payload,job,done);
        //done();
