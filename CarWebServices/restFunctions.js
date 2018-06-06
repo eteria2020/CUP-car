@@ -489,7 +489,6 @@ function init (opt) {
 	 */
 	getConfigs: function(req, res, next) {
         next();
-		if(Utility.validateConfig(req,res)){
 			pg.connect(conString, function(err, client, done) {
 
                 if (pgError(err,client)) {
@@ -502,7 +501,14 @@ function init (opt) {
                         " OR (fleet_id is null AND model is null AND car_plate is null) " +
                         " ORDER BY key, car_plate DESC , model DESC, fleet_id DESC ";
 
-                var params = [req.params.car_plate];
+                var auth = localParseAuth(req);
+
+                var params = [];
+                if(typeof  req.params.car_plate === 'undefined')
+                    params = [auth.username];
+                else
+                    params = [req.params.car_plate];
+
 
 			client.query(
 		        	query,
@@ -524,7 +530,7 @@ function init (opt) {
 		        	}
 		        );
 		    });
-		}
+
 	},
 
 
