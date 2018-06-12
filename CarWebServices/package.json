@@ -28,6 +28,6 @@
     "validator": "^4.5.2",
     "bunyan": "^1.4.0",
     "pg-connection-string":"^2.0.0",
-    "request": "^2.74.0"
+    "request": "2.74.0"
   }
 }

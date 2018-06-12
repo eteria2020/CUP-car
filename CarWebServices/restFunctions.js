@@ -295,6 +295,23 @@ function init (opt) {
                  case "SOS":
                      query = "INSERT INTO messages_outbox  (destination,type,subject,submitted,meta) VALUES ('support','SOS','SOS call',now(),$1)";
                      params = [JSON.stringify(event)];
+                     if(event.intval == 3) {
+                         setTimeout(function () { //first try
+                             getIncidentDetail(event, function (err) {
+
+                                 if (err) {
+                                     setTimeout(function () { //second try
+                                         getIncidentDetail(event, function () {
+                                             if (err) {
+                                                 console.error("Unable to retrieve incident details");
+                                             }
+                                         })
+                                     }, 1 * 10 * 1000)
+                                 }
+                             })
+
+                         }, 1 * 10 * 1000);
+                     }
                      break;
                  case "SHUTDOWN":
                  case "CAN_ANOMALIES":
@@ -1239,6 +1256,60 @@ function init (opt) {
         });
     }
 
+
+    function getIncidentDetail(event, cb) {
+
+        var url = "http://corestage.sharengo.it/api/urto.json";
+
+        console.log("Executing http call to retrieve address" +url);
+
+        request({
+            url: url,
+            timeout: 5000 // 5 sec
+        }, function (error, response, body) {
+            /*console.log('error:'+ error); // Print the error if one occurred
+            console.log('statusCode:'+ response + response.statusCode); // Print the response status code if a response was received*/
+            console.log('incident body: ' + body);
+
+            try {
+                if(error || response.statusCode !=200) {
+                    return cb(true);
+                }
+
+                var jsondata = JSON.parse(body);
+
+                MongoClient.connect(mongoUrl, function(err, db) {
+                    if (err) {
+                        console.error(event.car_plate,'Mongo connect error',err);
+                        cb(err);
+                        return;
+                    }
+
+
+                    var incident = db.collection('incident');
+
+
+                    incident.insertMany(jsondata, function(err1,result) {
+                        db.close();
+                        if (err1) {
+                            console.error(event.car_plate,'Mongo insert error',err1)
+                            log.error(event.car_plate,'Mongo insert error',err1);
+                            cb(err)
+                        } else {
+                            console.log(event.car_plate,"Mongo insert completed:" + result.result.n);
+                            cb(null);
+                        }
+
+                    });
+
+
+                });
+            }catch  (e) {
+                console.log("Exception while executing getIncidentDetail " +e);
+                return cb('');
+            }
+        });
+    }
 
 
 
