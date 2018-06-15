@@ -215,6 +215,31 @@ function init (opt) {
              //return next();
          },
 
+         /**
+          * get Commands
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getIncident: function(req, res, next) {
+             next();
+             if(Utility.validateIncident(req,res)){
+                 getIncidentDetail(req.params.id,function (err,resp) {
+console.log("callback");
+                     if(err){
+                         sendOutJSON(res,200,"some error occurres",null);//res.send(result.rows);
+
+                     }
+                     sendOutJSON(res,200,"data updated",resp);//res.send(result.rows);
+
+                 });
+                 //log.d(result.rows);
+
+
+             }
+             //return next();
+         },
+
      /**
       * get Events
       * @param  array   req  request
@@ -297,11 +322,11 @@ function init (opt) {
                      params = [JSON.stringify(event)];
                      if(event.intval == 3) {
                          setTimeout(function () { //first try
-                             getIncidentDetail(event, function (err) {
+                             getIncidentDetail(event.trip_id, function (err,res) {
 
                                  if (err) {
                                      setTimeout(function () { //second try
-                                         getIncidentDetail(event, function () {
+                                         getIncidentDetail(event.trip_id, function (err,res) {
                                              if (err) {
                                                  console.error("Unable to retrieve incident details");
                                              }
@@ -311,6 +336,12 @@ function init (opt) {
                              })
 
                          }, 1 * 10 * 1000);
+                     }
+                     break;
+                 case "PARK":
+                     if(event.intval ==1) {
+                         query = "INSERT INTO customer_locations (customer_id, latitude, longitude, action, timestamp, car_plate,ip,port) values ($1,$2, $3, $4 , now(), $5 ,$6,$7)";
+                         params = [event.customer_id, event.lat, event.lon, "park trip", event.car_plate, req.connection.remoteAddress, req.connection.remotePort];
                      }
                      break;
                  case "SHUTDOWN":
@@ -1257,7 +1288,7 @@ function init (opt) {
     }
 
 
-    function getIncidentDetail(event, cb) {
+    function getIncidentDetail(id, cb) {
 
         var url = "http://corestage.sharengo.it/api/urto.json";
 
@@ -1273,15 +1304,15 @@ function init (opt) {
 
             try {
                 if(error || response.statusCode !=200) {
-                    return cb(true);
+                    return cb(true,null);
                 }
 
                 var jsondata = JSON.parse(body);
 
                 MongoClient.connect(mongoUrl, function(err, db) {
                     if (err) {
-                        console.error(event.car_plate,'Mongo connect error',err);
-                        cb(err);
+                        console.error(id,'Mongo connect error',err);
+                        cb(err,null);
                         return;
                     }
 
@@ -1292,12 +1323,12 @@ function init (opt) {
                     incident.insertMany(jsondata, function(err1,result) {
                         db.close();
                         if (err1) {
-                            console.error(event.car_plate,'Mongo insert error',err1)
-                            log.error(event.car_plate,'Mongo insert error',err1);
-                            cb(err)
+                            console.error(id,'Mongo insert error',err1)
+                            log.error(id,'Mongo insert error',err1);
+                            cb(err1,null)
                         } else {
-                            console.log(event.car_plate,"Mongo insert completed:" + result.result.n);
-                            cb(null);
+                            console.log(id,"Mongo insert completed:" + result.result.n);
+                            cb(null,jsondata);
                         }
 
                     });

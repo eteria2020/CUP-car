@@ -223,6 +223,10 @@ function registerServer(server) {
         {path: '/v2/events', version: '1.0.0'},
         funcs.postEvents
     );
+    server.get(
+        {path: '/v2/incident', version: '1.0.0'},
+        funcs.getIncident
+    );
 
     server.post(
         {path: '/v2/trips', version: '1.0.0'},
