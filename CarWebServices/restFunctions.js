@@ -1149,7 +1149,7 @@ function init (opt) {
             result: -10,
             message: "OK",
             extra: "" };
-        var checkIfTripExist = "SELECT count(*) FROM trips WHERE id = $1 AND car_plate = $2 AND customer_id = $3";
+        var checkIfTripExist = "SELECT id,timestamp_beginning FROM trips WHERE id = $1 AND car_plate = $2 AND customer_id = $3";
         var checkIfTripExistParams = [trip.id, trip.id_veicolo, trip.id_cliente];
 
         var checkIfAlreadyClose = "SELECT count(*) FROM trips WHERE id = $1 AND timestamp_end IS NOT NULL";
@@ -1185,6 +1185,8 @@ function init (opt) {
                 cb(response);
                 client.end(); //EXIT
             } else {
+                if(res1.rows[0].timestamp_beginning > trip.ora)
+                    trip.ora = res1.rows[0].timestamp_beginning;
                 executeQuery(client, checkIfAlreadyClose, checkIfAlreadyCloseParams, err1, function (res2, err2) {//check if exist trip close with id to update data
                     //check if customer have other opened trips
                     if (res2.rows[0].count > 0) {
