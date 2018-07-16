@@ -92,9 +92,11 @@ function init (opt) {
                  if (typeof req.params.consumed === 'undefined') {
 
 
-                     query = "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
-                         "FROM reservations " +
-                         "WHERE  car_plate = $1";
+                     query ="SELECT  reservations.id, cards , customers.id as customer_id, customers.name , customers.surname , customers.mobile, pin, extract(epoch from beginning_ts) as time,  length  , reservations.active " +
+                         " FROM reservations LEFT JOIN customers ON reservations.customer_id = customers.id WHERE  car_plate = $1";
+                     // "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
+                     //     "FROM reservations " +
+                     //     "WHERE  car_plate = $1";
 
                      var params = [req.params.car_plate];
                      var resId = [];
@@ -103,7 +105,8 @@ function init (opt) {
                          query,
                          params,
                          function (err, result) {
-                             if (pgError(err, client)) {
+                             if (err) {
+                                 done();
                                  responseError(res, err);
                              } else {
                                  if ((typeof result !== 'undefined')) {
@@ -295,7 +298,7 @@ console.log("callback");
 
              var query;
 
-             var params
+             var params;
              switch (event.label){
                  case "CHARGE":
                     query = "UPDATE cars SET charging = $1 , plug = TRUE WHERE plate = $2";
@@ -364,12 +367,47 @@ console.log("callback");
                  query,
                  params,
                  function (err, result) {
-                     done();
+                     //done();
                      if (err) {
                          logError(err,err.stack);
+                         done();
                      } else {
                          if ((typeof result !== 'undefined')) {
                              //outJson = JSON.stringify(result.rows);
+                         }
+                         //IN CASO DI SELFCLODE DEVO CONTROLLARE ED ELIMINARE TRIP_PAYMENTS
+                         if(event.label === "SELFCLOSE"){
+                             var queeryTripBills = "DELETE from trip_bills WHERE trip_id = $1";
+                             var queeryTripBillsParams =[event.trip_id];
+
+                             client.query(queeryTripBills,
+                                 queeryTripBillsParams,
+                                 function (err1, result1) {
+                                     if(err1){
+                                         logError(err1,err1.stack);
+                                         done();
+                                     }else if(result1.rows.length >0){
+                                         console.log("DELETE FROM TRIP_BILLS " + event.trip_id);
+
+                                         var queeryTripPayments = "DELETE from trip_payments WHERE trip_id = $1";
+                                         var queeryTripPaymentsParams =[event.trip_id];
+
+                                         client.query(queeryTripPayments,
+                                             queeryTripPaymentsParams,
+                                             function (err2, result2) {
+                                             if(err2){
+                                                 logError(err2, err2.stack);
+                                                 done();
+                                             }//
+                                             done();
+                                                 console.log("delete from trip_payments" + event.trip_id);
+                                             })
+                                     }
+                                 })
+
+                         }
+                         else{
+                             done();
                          }
                          //log.d(result.rows);
 
@@ -1449,6 +1487,7 @@ console.log("callback");
     };
 
     function responseError(res,err) {
+      console.error(err);
       res.writeHead(500, {'content-type': 'text/plain'});
       res.end('An error occurred');
     }
