@@ -376,6 +376,11 @@ function updateCarInfo(callback,obj,id,job) {
    else
         fields += ", gps=NULL";
 
+    if (obj.hasOwnProperty('SIM_SN'))
+        fields += ", sim_sn=:SIM_SN ";
+    else
+        fields += ", sim_sn=NULL";
+
    var sql = "UPDATE cars_info SET lastupdate=now() " + fields + " WHERE car_plate = :VIN";
 
    log.debug(obj.VIN, obj.IMEI , sql);
