@@ -1089,7 +1089,7 @@ function init (opt) {
                             insertBusinessTripParams = [res1.rows[0].id,trip.id_cliente];
 
                             executeQuery(client, insertBusinessTrip, insertBusinessTripParams, errB1, function (resB2, errB2) {
-                                commitTransaction(client,err4, function (resCom, errCom) {
+                                commitTransaction(client,errB1, function (resCom, errCom) {
                                     response.result = res1.rows[0].id;
                                     response.message = "Updated business";
                                     cb(response);
