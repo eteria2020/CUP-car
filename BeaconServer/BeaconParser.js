@@ -75,6 +75,7 @@ function getTemplateMongo() {
 	batterySafety : true,
 	offLineTrips : 0,
 	parking : false,
+    SIM_SN : "",
 	PackV : 0
   };
 
@@ -375,6 +376,7 @@ function updateCarInfo(callback,obj,id,job) {
         fields += ", gps=:GPS ";
    else
         fields += ", gps=NULL";
+
 
    var sql = "UPDATE cars_info SET lastupdate=now() " + fields + " WHERE car_plate = :VIN";
 
