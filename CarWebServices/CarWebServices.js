@@ -59,6 +59,8 @@ var standardPort =      config.httpPort || 8123;
 var unsecurePort =      config.httpUnsecurePort || 8121;
 var debugMode =         config.debugMode || false;
 var redisCluster =      globalConfig.redisCluster || [];
+var preaut =            config.preaut || false;
+var preautPath =        config.preautPath || "/srv/apps/sharengo-publicsite/scripts/";
 
 
 
@@ -96,7 +98,7 @@ var dlog = {
 var server;
 var unsecureServer;
 
-var funcs = require('./restFunctions')( {pg: pg, conString: conString, validator: validator, log:dlog, mongoUrl :mongoUrl});
+var funcs = require('./restFunctions')( {pg: pg, conString: conString, validator: validator, log:dlog, mongoUrl :mongoUrl, preaut :preaut, preautPath :preautPath});
 
 
 // Local functions
@@ -229,7 +231,6 @@ function registerServer(server) {
         {path: '/v2/reservation', version: '1.0.0'},
         funcs.getReservation
     );
-
 
     server.get(
         {path: '/v2/commands', version: '1.0.0'},

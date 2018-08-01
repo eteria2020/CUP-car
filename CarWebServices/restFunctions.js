@@ -1,5 +1,6 @@
 var crypto = require('crypto');
 var request = require('request');
+const exec = require('child_process').exec;
 
 var MongoClient = require('mongodb').MongoClient;
 
@@ -23,6 +24,8 @@ function init (opt) {
      var conString = opt.conString;
      var validator = opt.validator;
      const mongoUrl = opt.mongoUrl;
+     var preaut = opt.preaut;
+     var preautPath = opt.preautPath;
 
      return {
 /* GET */
@@ -1127,8 +1130,8 @@ function init (opt) {
                                     response.result = res5.rows[0].id;
                                 }
                                 commitTransaction(client, err5, function (res6, err6) {
-                                    cb(response);
                                     client.end();
+                                    checkPreaut(response, trip, cb);
                                 });
                             });
                         });
@@ -1136,6 +1139,39 @@ function init (opt) {
                 });
             }
         });
+    }
+
+    function checkPreaut(response, trip, cb){
+        if(preaut && (response.result > 0 || typeof trip.id_cliente !== 'undefined')){
+            try {
+                exec('bash ' + preautPath + 'preauthorization.sh ' + trip.id_cliente + ' ' + response.result ,
+                    function (error, stdout, stderr) {
+                        if (error !== null) {
+                            console.log('exec error: ' + error);
+                            cb(response);
+                        } else {
+                            var preautResp = JSON.parse(stdout);
+                            if (Math.abs(preautResp.response) === 22) {
+                                response.preautDone = true;
+                                cb(response);
+                            } else if (Math.abs(preautResp.response) < 26) {
+                                response.preautDone = false;
+                                cb(response);
+                            } else {
+                                response.preautDone = false;
+                                response.extra = response.result;
+                                response.result = preautResp.response;
+                                cb(response);
+                            }
+                        }
+                    });
+            }catch  (e) {
+                response.preautDone = false;
+                cb(response);
+            }
+        } else {
+            cb(response);
+        }
     }
 
     function closeTrip(trip, cb) {//TODO set close timestamp equal to beginning if less
