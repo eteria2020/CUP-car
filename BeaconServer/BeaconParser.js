@@ -76,6 +76,7 @@ function getTemplateMongo() {
 	offLineTrips : 0,
 	parking : false,
     SIM_SN : "",
+    noGPS:false,
 	PackV : 0
   };
 
