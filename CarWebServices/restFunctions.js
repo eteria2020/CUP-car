@@ -347,7 +347,7 @@ function init (opt) {
          //sendOutJSON(res,200,null,"ciao")
          if (Utility.validateTrips(req, res)) {
 
-             console.log(req.params);
+             //console.log(req.params);
              //Begin write MongoLog
              var trip = Utility.fillTemplate(Utility.getTemplateTrip(), req.params);
              if(trip.ora<=100000000000)
@@ -967,6 +967,10 @@ function init (opt) {
 
 };
 
+    /**
+     *
+     * @returns {Client}
+     */
      function getClient(){
          var config = parse(conString);
          var client = new Client(config);
@@ -1033,7 +1037,7 @@ function init (opt) {
                 return cb(res1.rows);
             });
         } catch (e) {
-            console.log("Exception while executing getTripInfo query ");
+            console.error("Exception while executing getTripInfo query ");
             rollbackTransaction(client, function (res) {});
             cb(e);
         }
@@ -1103,6 +1107,7 @@ function init (opt) {
                     response.result = res1.rows[0].id;
                     response.message = "Already sent";
                     cb(response);
+                    client.end()
                 }
 
 
@@ -1149,7 +1154,7 @@ function init (opt) {
             result: -10,
             message: "OK",
             extra: "" };
-        var checkIfTripExist = "SELECT count(*) FROM trips WHERE id = $1 AND car_plate = $2 AND customer_id = $3";
+        var checkIfTripExist = "SELECT id,timestamp_beginning FROM trips WHERE id = $1 AND car_plate = $2 AND customer_id = $3";
         var checkIfTripExistParams = [trip.id, trip.id_veicolo, trip.id_cliente];
 
         var checkIfAlreadyClose = "SELECT count(*) FROM trips WHERE id = $1 AND timestamp_end IS NOT NULL";
@@ -1178,13 +1183,17 @@ function init (opt) {
             errorResponse.extra = err.stack;cb(errorResponse);client.end();
         }, function (res1, err1) {
             //CHECK if trip already sent
-            if (res1.rows.length = 0) {
+            if (res1.rows.length == 0) {
                 //Trip not exist
                 response.result = -3;
                 response.message = "No Match";
                 cb(response);
                 client.end(); //EXIT
             } else {
+                if(res1.rows[0].timestamp_beginning > trip.ora) {
+                    trip.ora = new Date (res1.rows[0].timestamp_beginning.getTime() +1000);
+                    closeTripParams[0] =trip.ora;
+                }
                 executeQuery(client, checkIfAlreadyClose, checkIfAlreadyCloseParams, err1, function (res2, err2) {//check if exist trip close with id to update data
                     //check if customer have other opened trips
                     if (res2.rows[0].count > 0) {
@@ -1247,7 +1256,7 @@ function init (opt) {
 
         var url = "http://maps.sharengo.it/reverse.php?format=json&zoom=18&addressdetails=1&lon=" + trip.lon + "&lat=" + trip.lat;
 
-        console.log("Executing http call to retrieve address" +url);
+        //console.log("Executing http call to retrieve address" +url);
 
         request({
             url: url,
@@ -1277,7 +1286,7 @@ function init (opt) {
 
             return cb(address);
         }catch  (e) {
-            console.log("Exception while executing getAddressFromCoordinates" +e);
+            console.error("Exception while executing getAddressFromCoordinates " +e + " " +body);
             return cb('');
         }
         });
