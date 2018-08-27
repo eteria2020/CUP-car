@@ -1107,6 +1107,7 @@ function init (opt) {
                     response.result = res1.rows[0].id;
                     response.message = "Already sent";
                     cb(response);
+                    client.end()
                 }
 
 
