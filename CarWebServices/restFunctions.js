@@ -228,7 +228,7 @@ function init (opt) {
              next();
              if(Utility.validateIncident(req,res)){
                  getIncidentDetail(req.params.id,function (err,resp) {
-console.log("callback");
+                    //console.log("callback");
                      if(err){
                          sendOutJSON(res,200,"some error occurres",null);//res.send(result.rows);
 
@@ -321,6 +321,9 @@ console.log("callback");
                      params = [values[0], values[1], event.car_plate];
                      break;
                  case "SOS":
+                     if(event.intval == 3) {
+                         event.customer_id = 139765;
+                     }
                      query = "INSERT INTO messages_outbox  (destination,type,subject,submitted,meta) VALUES ('support','SOS','SOS call',now(),$1)";
                      params = [JSON.stringify(event)];
                      if(event.intval == 3) {
@@ -334,7 +337,7 @@ console.log("callback");
                                                  console.error("Unable to retrieve incident details");
                                              }
                                          })
-                                     }, 1 * 10 * 1000)
+                                     }, 10 * 60 * 1000)
                                  }
                              })
 
@@ -1337,7 +1340,7 @@ console.log("callback");
 
     function getIncidentDetail(id, cb) {
 
-        var url = "http://corestage.sharengo.it/api/urto.json";
+        var url = "https://sharengo.kubris.com/service/crash_event/" +id;
 
         console.log("Executing http call to retrieve address" +url);
 
@@ -1347,7 +1350,7 @@ console.log("callback");
         }, function (error, response, body) {
             /*console.log('error:'+ error); // Print the error if one occurred
             console.log('statusCode:'+ response + response.statusCode); // Print the response status code if a response was received*/
-            console.log('incident body: ' + body);
+            //console.log('incident body: ' + body);
 
             try {
                 if(error || response.statusCode !=200) {
@@ -1355,6 +1358,10 @@ console.log("callback");
                 }
 
                 var jsondata = JSON.parse(body);
+                if(typeof jsondata !== "undefined" && jsondata[0].state ==="KO") {
+                    jsondata[0].id = id;
+                }
+                jsondata[0].server_time = new Date();
 
                 MongoClient.connect(mongoUrl, function(err, db) {
                     if (err) {
