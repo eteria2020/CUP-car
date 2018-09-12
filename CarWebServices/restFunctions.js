@@ -187,7 +187,7 @@ function init (opt) {
                          responseError(res, err);
                          return;// next(false);
                      }
-                     query = "UPDATE commands SET to_send = false WHERE car_plate = $1 and to_send = true RETURNING id, command , intarg1, intarg2, txtarg1, txtarg2, extract(epoch from queued) as queued, ttl, payload";
+                     query = "UPDATE commands SET to_send = false, received = now() WHERE car_plate = $1 and to_send = true RETURNING id, command , intarg1, intarg2, txtarg1, txtarg2, extract(epoch from queued) as queued, ttl, payload";
 
 
                      var params = [req.params.car_plate];
