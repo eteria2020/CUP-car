@@ -325,12 +325,12 @@ function registerServer(server) {
                 res.setHeader( 'Content-Length', Buffer.byteLength( data ) );
 
                 var auth = funcs.parseAuth(request)
-                console.log(auth);
+                //console.log(auth);
 
                 //var username = request.authorization?request.authorization.basic.username:"UNKNOWN";
                 var username = "USERNAME";
                 dlog.d(request.method + " " + request.url + " - " + auth.username + " " + res.statusCode  +" " + res.getHeader('Content-Length'));
-                dlog.d("Body: " + (data.length <= 16 ? data : data.substr(0,15)+'...')+ "  [" + Buffer.byteLength( data ) + "]");
+                // dlog.d("Body: " + (data.length <= 16 ? data : data.substr(0,15)+'...')+ "  [" + Buffer.byteLength( data ) + "]");
 
 
 	            return cb(null,data);
