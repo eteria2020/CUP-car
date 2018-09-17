@@ -378,8 +378,8 @@ function init (opt) {
                          if ((typeof result !== 'undefined')) {
                              //outJson = JSON.stringify(result.rows);
                          }
-                         //IN CASO DI SELFCLODE DEVO CONTROLLARE ED ELIMINARE TRIP_PAYMENTS
-                         if(event.label === "SELFCLOSE"){
+                         //IN CASO DI SELFCLOSE DEVO CONTROLLARE ED ELIMINARE TRIP_PAYMENTS
+                         if(event.label === "SELFCLOSE" && event.txtval === "NOPAY"){
                              var queeryTripBills = "DELETE from trip_bills WHERE trip_id = $1";
                              var queeryTripBillsParams =[event.trip_id];
 
@@ -392,18 +392,19 @@ function init (opt) {
                                      }else if(result1.rows.length >0){
                                          console.log("DELETE FROM TRIP_BILLS " + event.trip_id);
 
-                                         var queeryTripPayments = "DELETE from trip_payments WHERE trip_id = $1";
-                                         var queeryTripPaymentsParams =[event.trip_id];
+                                         var queryTripPayments = "DELETE from trip_payments WHERE trip_id = $1";
+                                         var queryTripPaymentsParams =[event.trip_id];
 
-                                         client.query(queeryTripPayments,
-                                             queeryTripPaymentsParams,
+                                         client.query(queryTripPayments,
+                                             queryTripPaymentsParams,
                                              function (err2, result2) {
-                                             if(err2){
-                                                 logError(err2, err2.stack);
-                                                 done();
-                                             }//
-                                             done();
-                                                 console.log("delete from trip_payments" + event.trip_id);
+                                                 if(err2){
+                                                     logError(err2, err2.stack);
+                                                     done();
+                                                 }else {
+                                                     done();
+                                                     console.log("delete from trip_payments" + event.trip_id);
+                                                 }
                                              })
                                      }
                                  })
