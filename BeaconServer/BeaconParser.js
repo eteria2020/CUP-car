@@ -331,11 +331,24 @@ function updateCarInfo(callback,obj,id,job) {
    else
        fields +=", android_build=NULL ";
 
+    if (obj.hasOwnProperty('SIM_SN'))
+        fields +=", android_iccid=:SIM_SN ";
 
-   if (obj.hasOwnProperty('TBoxSw'))
-       fields +=", tbox_sw=:TBoxSw ";
-   else
-       fields +=", tbox_sw=NULL ";
+
+   if (obj.hasOwnProperty('TBoxSw')) {
+       fields += ", tbox_sw=:TBoxSw ";
+       try{
+          var arr =  obj.TBoxSw.split("-");
+          if(typeof arr[arr.length - 1]!=="undefined"){
+              var clean = arr[arr.length - 1].split("\r");
+              obj.gprs_iccid = clean[0];
+              fields += ", gprs_iccid=:gprs_iccid ";
+          }
+       }catch(e){
+
+       }
+   }
+
 
 
    if (obj.hasOwnProperty('TBoxHw'))
