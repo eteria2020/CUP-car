@@ -370,11 +370,11 @@ function init (opt) {
                  query,
                  params,
                  function (err, result) {
-                     //done();
+                     done();
                      if (err) {
                          logError(err,err.stack);
-                         done();
-                     } else {
+                         //done();
+                     } /*else {
                          if ((typeof result !== 'undefined')) {
                              //outJson = JSON.stringify(result.rows);
                          }
@@ -417,7 +417,7 @@ function init (opt) {
 
                          //sendOutJSON(res,200,null,null);
 
-                     }
+                     }*/
                  }
              );
 
