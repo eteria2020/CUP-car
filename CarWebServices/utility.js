@@ -141,6 +141,20 @@ return {
             return true;
         }
     },
+    validateIncident: function (req,res){
+
+        if(
+            (typeof req.params.id === 'undefined')
+
+        ){
+            console.log('\n+++++++++++++++++\nvalidation error\n');
+            console.log(req.params);
+            sendOutJSON(res,400,'Invalid Commands parameters',null);
+            return false;
+        }else{
+            return true;
+        }
+    },
     validateReservation: function (req,res){
 
         if(

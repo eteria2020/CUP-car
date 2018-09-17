@@ -92,9 +92,11 @@ function init (opt) {
                  if (typeof req.params.consumed === 'undefined') {
 
 
-                     query = "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
-                         "FROM reservations " +
-                         "WHERE  car_plate = $1";
+                     query ="SELECT  reservations.id, cards , customers.id as customer_id, customers.name , customers.surname , customers.mobile, pin, extract(epoch from beginning_ts) as time,  length  , reservations.active " +
+                         " FROM reservations LEFT JOIN customers ON reservations.customer_id = customers.id WHERE  car_plate = $1";
+                     // "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
+                     //     "FROM reservations " +
+                     //     "WHERE  car_plate = $1";
 
                      var params = [req.params.car_plate];
                      var resId = [];
@@ -103,7 +105,8 @@ function init (opt) {
                          query,
                          params,
                          function (err, result) {
-                             if (pgError(err, client)) {
+                             if (err) {
+                                 done();
                                  responseError(res, err);
                              } else {
                                  if ((typeof result !== 'undefined')) {
@@ -215,6 +218,31 @@ function init (opt) {
              //return next();
          },
 
+         /**
+          * get Commands
+          * @param  array   req  request
+          * @param  array   res  response
+          * @param  function next handler
+          */
+         getIncident: function(req, res, next) {
+             next();
+             if(Utility.validateIncident(req,res)){
+                 getIncidentDetail(req.params.id,function (err,resp) {
+                    //console.log("callback");
+                     if(err){
+                         sendOutJSON(res,200,"some error occurres",null);//res.send(result.rows);
+
+                     }
+                     sendOutJSON(res,200,"data updated",resp);//res.send(result.rows);
+
+                 });
+                 //log.d(result.rows);
+
+
+             }
+             //return next();
+         },
+
      /**
       * get Events
       * @param  array   req  request
@@ -270,7 +298,7 @@ function init (opt) {
 
              var query;
 
-             var params
+             var params;
              switch (event.label){
                  case "CHARGE":
                     query = "UPDATE cars SET charging = $1 , plug = TRUE WHERE plate = $2";
@@ -293,8 +321,34 @@ function init (opt) {
                      params = [values[0], values[1], event.car_plate];
                      break;
                  case "SOS":
+                     if(event.intval == 3) {
+                         event.customer_id = 139765;
+                     }
                      query = "INSERT INTO messages_outbox  (destination,type,subject,submitted,meta) VALUES ('support','SOS','SOS call',now(),$1)";
                      params = [JSON.stringify(event)];
+                     if(event.intval == 3) {
+                         setTimeout(function () { //first try
+                             getIncidentDetail(event.trip_id, function (err,res) {
+
+                                 if (err) {
+                                     setTimeout(function () { //second try
+                                         getIncidentDetail(event.trip_id, function (err,res) {
+                                             if (err) {
+                                                 console.error("Unable to retrieve incident details");
+                                             }
+                                         })
+                                     }, 10 * 60 * 1000)
+                                 }
+                             })
+
+                         }, 1 * 60 * 1000);
+                     }
+                     break;
+                 case "PARK":
+                     if(event.intval ==1) {
+                         query = "INSERT INTO customer_locations (customer_id, latitude, longitude, action, timestamp, car_plate,ip,port) values ($1,$2, $3, $4 , now(), $5 ,$6,$7)";
+                         params = [event.customer_id, event.lat, event.lon, "park trip", event.car_plate, req.connection.remoteAddress, req.connection.remotePort];
+                     }
                      break;
                  case "SHUTDOWN":
                  case "CAN_ANOMALIES":
@@ -319,15 +373,51 @@ function init (opt) {
                      done();
                      if (err) {
                          logError(err,err.stack);
-                     } else {
+                         //done();
+                     } /*else {
                          if ((typeof result !== 'undefined')) {
                              //outJson = JSON.stringify(result.rows);
+                         }
+                         //IN CASO DI SELFCLOSE DEVO CONTROLLARE ED ELIMINARE TRIP_PAYMENTS
+                         if(event.label === "SELFCLOSE" && event.txtval === "NOPAY"){
+                             var queeryTripBills = "DELETE from trip_bills WHERE trip_id = $1";
+                             var queeryTripBillsParams =[event.trip_id];
+
+                             client.query(queeryTripBills,
+                                 queeryTripBillsParams,
+                                 function (err1, result1) {
+                                     if(err1){
+                                         logError(err1,err1.stack);
+                                         done();
+                                     }else if(result1.rows.length >0){
+                                         console.log("DELETE FROM TRIP_BILLS " + event.trip_id);
+
+                                         var queryTripPayments = "DELETE from trip_payments WHERE trip_id = $1";
+                                         var queryTripPaymentsParams =[event.trip_id];
+
+                                         client.query(queryTripPayments,
+                                             queryTripPaymentsParams,
+                                             function (err2, result2) {
+                                                 if(err2){
+                                                     logError(err2, err2.stack);
+                                                     done();
+                                                 }else {
+                                                     done();
+                                                     console.log("delete from trip_payments" + event.trip_id);
+                                                 }
+                                             })
+                                     }
+                                 })
+
+                         }
+                         else{
+                             done();
                          }
                          //log.d(result.rows);
 
                          //sendOutJSON(res,200,null,null);
 
-                     }
+                     }*/
                  }
              );
 
@@ -1249,6 +1339,64 @@ function init (opt) {
     }
 
 
+    function getIncidentDetail(id, cb) {
+
+        var url = "https://sharengo.kubris.com/service/crash_event/" +id;
+
+        console.log("Executing http call to retrieve address" +url);
+
+        request({
+            url: url,
+            timeout: 5000 // 5 sec
+        }, function (error, response, body) {
+            /*console.log('error:'+ error); // Print the error if one occurred
+            console.log('statusCode:'+ response + response.statusCode); // Print the response status code if a response was received*/
+            //console.log('incident body: ' + body);
+
+            try {
+                if(error || response.statusCode !=200) {
+                    return cb(true,null);
+                }
+
+                var jsondata = JSON.parse(body);
+                if(typeof jsondata !== "undefined" && jsondata[0].state ==="KO") {
+                    jsondata[0].id = id;
+                }
+                jsondata[0].server_time = new Date();
+
+                MongoClient.connect(mongoUrl, function(err, db) {
+                    if (err) {
+                        console.error(id,'Mongo connect error',err);
+                        cb(err,null);
+                        return;
+                    }
+
+
+                    var incident = db.collection('incident');
+
+
+                    incident.insertMany(jsondata, function(err1,result) {
+                        db.close();
+                        if (err1) {
+                            console.error(id,'Mongo insert error',err1)
+                            log.error(id,'Mongo insert error',err1);
+                            cb(err1,null)
+                        } else {
+                            console.log(id,"Mongo insert completed:" + result.result.n);
+                            cb(null,jsondata);
+                        }
+
+                    });
+
+
+                });
+            }catch  (e) {
+                console.log("Exception while executing getIncidentDetail " +e);
+                return cb('');
+            }
+        });
+    }
+
 
 
 
@@ -1356,6 +1504,7 @@ function init (opt) {
     };
 
     function responseError(res,err) {
+      console.error(err);
       res.writeHead(500, {'content-type': 'text/plain'});
       res.end('An error occurred');
     }

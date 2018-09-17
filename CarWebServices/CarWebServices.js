@@ -145,7 +145,7 @@ function registerServer(server) {
 	server.use(restify.gzipResponse());
 	server.use(restify.bodyParser());
 	server.use(restify.throttle({
-	    burst: 32,//32
+	    burst: 100,//32
 	    rate: 200,//200
 	    ip: true,
 	    /*overrides: {
@@ -218,6 +218,14 @@ function registerServer(server) {
     server.post(
         {path: '/v2/events', version: '1.0.0'},
         funcs.postEvents
+    );
+    /*server.get(
+        {path: '/v2/events', version: '1.0.0'},
+        funcs.postEvents
+    );*/
+    server.get(
+        {path: '/v2/incident', version: '1.0.0'},
+        funcs.getIncident
     );
 
     server.post(
