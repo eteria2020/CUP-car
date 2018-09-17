@@ -341,7 +341,7 @@ function init (opt) {
                                  }
                              })
 
-                         }, 1 * 10 * 1000);
+                         }, 1 * 60 * 1000);
                      }
                      break;
                  case "PARK":
