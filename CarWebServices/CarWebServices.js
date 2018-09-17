@@ -145,7 +145,7 @@ function registerServer(server) {
 	server.use(restify.gzipResponse());
 	server.use(restify.bodyParser());
 	server.use(restify.throttle({
-	    burst: 32,//32
+	    burst: 100,//32
 	    rate: 200,//200
 	    ip: true,
 	    /*overrides: {
