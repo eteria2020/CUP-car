@@ -150,6 +150,7 @@ function init (opt) {
                                          }
                                      );
                                  });
+                                 done();
                              }
                          }
                      );
