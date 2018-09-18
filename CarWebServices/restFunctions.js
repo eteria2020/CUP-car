@@ -92,7 +92,7 @@ function init (opt) {
                  if (typeof req.params.consumed === 'undefined') {
 
 
-                     query ="SELECT  reservations.id, cards , customers.id as customer_id, customers.name , customers.surname , customers.mobile, pin, extract(epoch from beginning_ts) as time,  length  , reservations.active " +
+                     query ="SELECT  reservations.id, cards , customers.id as customer_id, customers.name , customers.surname , customers.mobile, pin, upper(customers.card_code) as card_code, extract(epoch from beginning_ts) as time,  length  , reservations.active " +
                          " FROM reservations LEFT JOIN customers ON reservations.customer_id = customers.id WHERE  car_plate = $1";
                      // "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
                      //     "FROM reservations " +
