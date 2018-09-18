@@ -92,7 +92,7 @@ function init (opt) {
                  if (typeof req.params.consumed === 'undefined') {
 
 
-                     query ="SELECT  reservations.id, cards , customers.id as customer_id, customers.name , customers.surname , customers.mobile, pin, extract(epoch from beginning_ts) as time,  length  , reservations.active " +
+                     query ="SELECT  reservations.id, cards , customers.id as customer_id, customers.name , customers.surname , customers.mobile, pin, upper(customers.card_code) as card_code, extract(epoch from beginning_ts) as time,  length  , reservations.active " +
                          " FROM reservations LEFT JOIN customers ON reservations.customer_id = customers.id WHERE  car_plate = $1";
                      // "SELECT  id, cards , extract(epoch from beginning_ts) as time,  length  , active " +
                      //     "FROM reservations " +
@@ -111,11 +111,25 @@ function init (opt) {
                              } else {
                                  if ((typeof result !== 'undefined')) {
                                      //outJson = JSON.stringify(result.rows);
+                                     result.rows.forEach(function (reservation) {
+                                         console.log(reservation.pin);
+                                         if(reservation.pin !=null) {
+                                             var a = ["primary", "secondary", "company"];
+                                             a.forEach(function (key) {
+                                                 if (reservation.pin[key]) {
+                                                     var p = "" + reservation.pin[key];
+                                                     reservation.pin[key] = crypto.createHash('md5').update(p).digest("hex").substring(0, 8);
+                                                 }
+                                             });
+                                         }
+                                     });
+
+
                                  }
                                  //log.d(result.rows);
                                  sendOutJSON(res,200,null,result.rows);
-                                 if (result.rows.length > 0 && result.rows[0].id > 0) {
-                                     resId = [result.rows[0].id];
+                                 result.rows.forEach(function (reservation){
+                                     resId = [reservation.id];
 
                                      var query2 = "UPDATE reservations SET to_send = FALSE , sent_ts = now() WHERE id= $1 AND to_send = TRUE";
                                      client.query(
@@ -135,8 +149,7 @@ function init (opt) {
                                              }
                                          }
                                      );
-                                 }
-                                 done();
+                                 });
                              }
                          }
                      );
