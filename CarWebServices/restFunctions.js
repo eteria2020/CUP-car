@@ -111,11 +111,25 @@ function init (opt) {
                              } else {
                                  if ((typeof result !== 'undefined')) {
                                      //outJson = JSON.stringify(result.rows);
+                                     result.rows.forEach(function (reservation) {
+                                         console.log(reservation.pin);
+                                         if(reservation.pin !=null) {
+                                             var a = ["primary", "secondary", "company"];
+                                             a.forEach(function (key) {
+                                                 if (reservation.pin[key]) {
+                                                     var p = "" + reservation.pin[key];
+                                                     reservation.pin[key] = crypto.createHash('md5').update(p).digest("hex").substring(0, 8);
+                                                 }
+                                             });
+                                         }
+                                     });
+
+
                                  }
                                  //log.d(result.rows);
                                  sendOutJSON(res,200,null,result.rows);
-                                 if (result.rows.length > 0 && result.rows[0].id > 0) {
-                                     resId = [result.rows[0].id];
+                                 result.rows.forEach(function (reservation){
+                                     resId = [reservation.id];
 
                                      var query2 = "UPDATE reservations SET to_send = FALSE , sent_ts = now() WHERE id= $1 AND to_send = TRUE";
                                      client.query(
@@ -135,8 +149,7 @@ function init (opt) {
                                              }
                                          }
                                      );
-                                 }
-                                 done();
+                                 });
                              }
                          }
                      );
