@@ -315,7 +315,7 @@ function init (opt) {
              var params;
              switch (event.label){
                  case "CHARGE":
-                    query = "UPDATE cars SET charging = $1 , plug = TRUE WHERE plate = $2";
+                    query = "UPDATE cars SET plug = $1  WHERE plate = $2";
                     params = [event.intval === 1, event.car_plate];
                      break;
                  case "SW_BOOT":
