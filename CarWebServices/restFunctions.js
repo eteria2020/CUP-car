@@ -457,6 +457,8 @@ function init (opt) {
              if(trip.ora<=100000000000)
                  trip.ora = trip.ora *1000;
              trip.ora = new Date(trip.ora);
+             if(typeof trip.parent_id !== "undefined" && trip.parent_id <-1)
+                 trip.parent_id = -1;
              getAddressFromCoordinates(trip, function (address) {
                  switch (trip.cmd) {
                      case 0:
