@@ -1363,7 +1363,7 @@ function init (opt) {
 
         request({
             url: url,
-            timeout: 5000 // 5 sec
+            timeout: 10000 // 10 sec
         }, function (error, response, body) {
             /*console.log('error:'+ error); // Print the error if one occurred
             console.log('statusCode:'+ response + response.statusCode); // Print the response status code if a response was received*/
@@ -1375,7 +1375,7 @@ function init (opt) {
                 }
 
                 var jsondata = JSON.parse(body);
-                if(typeof jsondata !== "undefined" && jsondata[0].state ==="KO") {
+                if(typeof jsondata !== "undefined") {
                     jsondata[0].id = id;
                 }
                 jsondata[0].server_time = new Date();
