@@ -331,7 +331,7 @@ function updateCarInfo(callback,obj,id,job) {
    else
        fields +=", android_build=NULL ";
 
-    if (obj.hasOwnProperty('SIM_SN'))
+    if (obj.hasOwnProperty('SIM_SN') && obj.SIM_SN !== "" && obj.SIM_SN !==null)
         fields +=", android_iccid=:SIM_SN ";
 
 
@@ -341,8 +341,10 @@ function updateCarInfo(callback,obj,id,job) {
           var arr =  obj.TBoxSw.split("-");
           if(typeof arr[arr.length - 1]!=="undefined"){
               var clean = arr[arr.length - 1].split("\r");
-              obj.gprs_iccid = clean[0];
-              fields += ", gprs_iccid=:gprs_iccid ";
+              if(typeof clean[0] === "string" && obj.gprs_iccid.length >15) {
+                  obj.gprs_iccid = clean[0];
+                  fields += ", gprs_iccid=:gprs_iccid ";
+              }
           }
        }catch(e){
 
