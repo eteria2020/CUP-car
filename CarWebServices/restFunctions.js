@@ -310,9 +310,9 @@ function init (opt) {
 
              });
 
-             var query;
+             var query, query2;
 
-             var params;
+             var params, params2;
              switch (event.label){
                  case "CHARGE":
                     query = "UPDATE cars SET plug = $1  WHERE plate = $2";
@@ -340,7 +340,9 @@ function init (opt) {
                      }
                      query = "INSERT INTO messages_outbox  (destination,type,subject,submitted,meta) VALUES ('support','SOS','SOS call',now(),$1)";
                      params = [JSON.stringify(event)];
-                     if(event.intval == 3) {
+                     if(event.intval == 3) { //urto black box
+                         query2 = "UPDATE cars_info SET crash = $2 where car_plate = $1";
+                         params2 = [event.car_plate, event.trip_id];
                          setTimeout(function () { //first try
                              getIncidentDetail(event.trip_id, function (err,res) {
 
@@ -355,7 +357,11 @@ function init (opt) {
                                  }
                              })
 
-                         }, 1 * 60 * 1000);
+                         }, 10 * 60 * 1000);
+                     }
+                     if(event.intval == 4) { // battery disconnected
+                         query2 = "UPDATE cars_info SET service_battery = now() where car_plate = $1";
+                         params2 = [event.car_plate];
                      }
                      break;
                  case "PARK":
@@ -388,50 +394,21 @@ function init (opt) {
                      if (err) {
                          logError(err,err.stack);
                          //done();
-                     } /*else {
-                         if ((typeof result !== 'undefined')) {
-                             //outJson = JSON.stringify(result.rows);
-                         }
-                         //IN CASO DI SELFCLOSE DEVO CONTROLLARE ED ELIMINARE TRIP_PAYMENTS
-                         if(event.label === "SELFCLOSE" && event.txtval === "NOPAY"){
-                             var queeryTripBills = "DELETE from trip_bills WHERE trip_id = $1";
-                             var queeryTripBillsParams =[event.trip_id];
+                     } else {
 
-                             client.query(queeryTripBills,
-                                 queeryTripBillsParams,
-                                 function (err1, result1) {
-                                     if(err1){
-                                         logError(err1,err1.stack);
-                                         done();
-                                     }else if(result1.rows.length >0){
-                                         console.log("DELETE FROM TRIP_BILLS " + event.trip_id);
-
-                                         var queryTripPayments = "DELETE from trip_payments WHERE trip_id = $1";
-                                         var queryTripPaymentsParams =[event.trip_id];
-
-                                         client.query(queryTripPayments,
-                                             queryTripPaymentsParams,
-                                             function (err2, result2) {
-                                                 if(err2){
-                                                     logError(err2, err2.stack);
-                                                     done();
-                                                 }else {
-                                                     done();
-                                                     console.log("delete from trip_payments" + event.trip_id);
-                                                 }
-                                             })
+                         if (typeof query2 !== "undefined" && typeof params2 !== "undefined") {//SECOND QUERY
+                             client.query(
+                                 query2,
+                                 params2,
+                                 function (err, result) {
+                                     done();
+                                     if (err) {
+                                         logError(err, err.stack);
+                                         //done();
                                      }
-                                 })
-
+                                 });
                          }
-                         else{
-                             done();
-                         }
-                         //log.d(result.rows);
-
-                         //sendOutJSON(res,200,null,null);
-
-                     }*/
+                     }
                  }
              );
 
