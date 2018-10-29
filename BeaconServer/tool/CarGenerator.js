@@ -11,6 +11,7 @@ var zlib = require('zlib');
 var gzip = zlib.createGzip();
 var hostPHP = "http://api.localhost.it/api/";
 var hostNode = "http://127.0.0.1:8121/";
+var hostNodeMobile = "https://api.sharengo.it:8023/";
 var hostBeacon = "http://127.0.0.1:7600/";
 var countRes = 0;
 var countComm = 0;
@@ -487,6 +488,18 @@ Car.prototype.getPois = function getWitelist() {
         console.log(error);
     });
 };
+Car.prototype.getCars = function getWitelist() {
+
+    var time = microtime();
+    var msg = this.plate + ' : pois  ' + (time - this.start);
+    //console.log(msg);
+    axios.get(hostNodeMobile + '/v3/cars').then(function (response) {
+        //console.log(response.data);
+        console.log("prodCars " + countPoi++);
+    }).catch(function (error) {
+        console.log(error);
+    });
+};
 
 Car.prototype.run = function () {
     var _this2 = this;
@@ -495,36 +508,39 @@ Car.prototype.run = function () {
     var time = microtime();
     var msg = this.plate + ' : ' + this.count + '  ' + (time - this.start);
     console.log(msg);
+    // setTimeout(function () {
+    //     return setInterval(_this2.sendHttpBacon.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); //limite su VM 2 sec
+    // setTimeout(function () {
+    //     return setInterval(_this2.getWhitelist.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); // impatto alto se richiede sempre tutti i dati
+    // setTimeout(function () {
+    //     return setInterval(_this2.getBusiness.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
+    // setTimeout(function () {
+    //     return setInterval(_this2.getConfig.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); //impatto minimo
+    // setTimeout(function () {
+    //     return setInterval(_this2.getArea.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); //alto impatto carico aumenta fino a 5 fermo
+    // setTimeout(function () {
+    //     return setInterval(_this2.getCommands.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
+    // setTimeout(function () {
+    //     return setInterval(_this2.sendTrips.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
+    // setTimeout(function () {
+    //     return setInterval(_this2.sendEvents.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
+    // setTimeout(function () {
+    //     return setInterval(_this2.getReservations.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000)); //ogni 2 sec con pm2 load 0.30
+    // setTimeout(function () {
+    //     return setInterval(_this2.getPois.bind(_this2), 1 * 10 * 1000);
+    // }, random(0, 1 * 10 * 1000));
     setTimeout(function () {
-        return setInterval(_this2.sendHttpBacon.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); //limite su VM 2 sec
-    setTimeout(function () {
-        return setInterval(_this2.getWhitelist.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); // impatto alto se richiede sempre tutti i dati
-    setTimeout(function () {
-        return setInterval(_this2.getBusiness.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); // praticamente nessun impatto sul load //dopo un po porta il load a 1.2
-    setTimeout(function () {
-        return setInterval(_this2.getConfig.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); //impatto minimo
-    setTimeout(function () {
-        return setInterval(_this2.getArea.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); //alto impatto carico aumenta fino a 5 fermo
-    setTimeout(function () {
-        return setInterval(_this2.getCommands.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); //alto impatto carico arriva fino a troppo 10 e lag sul pc
-    setTimeout(function () {
-        return setInterval(_this2.sendTrips.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); //impatto medio, sinceramente pensavo peggo, dopo un po' è arrivato a 4 di load comunque continua a salire
-    setTimeout(function () {
-        return setInterval(_this2.sendEvents.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); // basso impatto , ho provato con l'invio di un evento che non scrive su pg carico 0.2 abbastanza stabile
-    setTimeout(function () {
-        return setInterval(_this2.getReservations.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000)); //ogni 2 sec con pm2 load 0.30
-    setTimeout(function () {
-        return setInterval(_this2.getPois.bind(_this2), 1 * 10 * 1000);
-    }, random(0, 1 * 10 * 1000));
+        return setInterval(_this2.getCars().bind(_this2), 1 * 1 * 1000);
+    }, random(0, 1 * 1 * 1000));
 };
 
 if (cluster.isMaster) {
