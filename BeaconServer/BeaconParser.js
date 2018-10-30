@@ -341,7 +341,7 @@ function updateCarInfo(callback,obj,id,job) {
           var arr =  obj.TBoxSw.split("-");
           if(typeof arr[arr.length - 1]!=="undefined"){
               var clean = arr[arr.length - 1].split("\r");
-              if(typeof clean[0] === "string" && obj.gprs_iccid.length >15) {
+              if(clean[0]!= "") {
                   obj.gprs_iccid = clean[0];
                   fields += ", gprs_iccid=:gprs_iccid ";
               }
