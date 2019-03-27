@@ -8,7 +8,7 @@ try {
 var logPath =  globalConfig.logPath;
 var zmqRouterUrl =  globalConfig.zmqRouterUrl;
 
-var gatewayApiURL = expo.gatewayApiURL || "http://localhost:50594";
+var gatewayApiURL = globalConfig.gatewayApiURL || "http://localhost:50594";
 var request = require('request');
 
 var zmq = require('zmq');
