@@ -8,6 +8,9 @@ try {
 var logPath =  globalConfig.logPath;
 var zmqRouterUrl =  globalConfig.zmqRouterUrl;
 
+var gatewayApiURL = expo.gatewayApiURL || "http://localhost:50594";
+var request = require('request');
+
 var zmq = require('zmq');
 
 var pg = require('pg');
@@ -131,10 +134,33 @@ function notifyCommand(car_plate,to_send) {
     sock.send([car_plate,'{"commands":1}']);
     console.log('SEND:', car_plate,'{"command":1}');
     log.debug('SEND:', car_plate,'{"command":1}');
+    wakeCar(car_plate);
   }
 }
 
-var sock = zmq.socket('xpub');
+function wakeCar(car_plate) {
+
+    request({
+        url: gatewayApiURL + '/wakeAndroid/' + car_plate,
+        timeout: 5000 // 5 sec
+    }, function (error, response, body) {
+        if (error) {
+
+            console.log(error)
+        } else {
+            console.log(body);
+            if (response.statusCode === 200) {
+                console.log("wakeCar Sent succesfyully to " + car_plate);
+            } else {
+                console.log("wakeCar error code: " + response.statusCode);
+            }
+        }
+    });
+}
+
+
+
+    var sock = zmq.socket('xpub');
 
 var count =0;
 
@@ -169,3 +195,4 @@ doListen();
 
 log.debug("Started");
 console.log(log.levels());
+
