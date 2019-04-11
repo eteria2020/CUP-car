@@ -1,12 +1,15 @@
 try {
     var globalConfig = require('../config/globalConfig');
-}   catch(ex) {
+} catch (ex) {
     console.warn("Missing or invalid ../config/globalConfig.js");
     var globalConfig = {};
 }
 
-var logPath =  globalConfig.logPath;
-var zmqRouterUrl =  globalConfig.zmqRouterUrl;
+var logPath = globalConfig.logPath;
+var zmqRouterUrl = globalConfig.zmqRouterUrl;
+
+var gatewayApiURL = globalConfig.gatewayApiURL || "http://localhost:50594";
+var request = require('request');
 
 var zmq = require('zmq');
 
@@ -18,13 +21,13 @@ var cstr = globalConfig.pgDb;
 var bunyan = require('bunyan');
 
 var log = bunyan.createLogger({
-  name: "MqNotifier",
-  streams: [{ path : logPath + 'MqNotifier.log' , level : 'info' },
-            { path : logPath + 'MqNotifier.log' , level : 'debug' },
-            { path : logPath + 'MqNotifier.log' , level : 'warning' },
-            { path : logPath + 'MqNotifier.log' , level : 'error' }
-  ],
-  serializers: bunyan.stdSerializers
+    name: "MqNotifier",
+    streams: [{path: logPath + 'MqNotifier.log', level: 'info'},
+        {path: logPath + 'MqNotifier.log', level: 'debug'},
+        {path: logPath + 'MqNotifier.log', level: 'warning'},
+        {path: logPath + 'MqNotifier.log', level: 'error'}
+    ],
+    serializers: bunyan.stdSerializers
 });
 
 
@@ -33,120 +36,154 @@ var pgpubsub = new PGPubsub(cstr);
 
 
 function scanPendingReservations(car_plate) {
-  log.debug("Scan pending reservations START");
-  pg.connect(cstr,function (err,client,done) {
-    if (err) {
-      console.error('PgConnect error',err);
-      log.error('PgConnect error',err);
-      return;
+    log.debug("Scan pending reservations START");
+    pg.connect(cstr, function (err, client, done) {
+        if (err) {
+            console.error('PgConnect error', err);
+            log.error('PgConnect error', err);
+            return;
+        }
+
+        var where_carplate = (typeof car_plate != 'undefined' ? " AND car_plate='" + car_plate + "'" : "");
+        var sql = "SELECT car_plate  FROM reservations WHERE to_send = TRUE " + where_carplate;
+        var query = client.query(sql, null, function (err, result) {
+            if (err) {
+                console.error('Query reservations error', err);
+                log.error("Scan pending reservations (Where:" + where_carplate + ")", err);
+                return;
+            }
+        });
+
+
+        query.on('row', function (row) {
+            notifyReservation(row.car_plate, true);
+        });
+
+        query.on('end', function (result) {
+            done(client);
+            log.debug("Scan pending reservations END")
+        });
+
+    });
+}
+
+function extractObcVersion(software_version) {
+    var car_obc = "0.0.0";
+    try {
+        car_obc = (software_version || "0.0.0").replace(/[^0-9.]/g, "").split('.');
+        car_obc = car_obc[0].concat(car_obc[1]);
+    } catch (Exception) {
     }
-
-    var where_carplate = (typeof car_plate!= 'undefined' ?" AND car_plate='"+car_plate+"'":"");
-    var sql = "SELECT car_plate  FROM reservations WHERE to_send = TRUE " + where_carplate;
-    var query = client.query(sql, null , function(err,result) {
-      if (err) {
-        console.error('Query reservations error',err);
-        log.error("Scan pending reservations (Where:"+where_carplate+")",err);
-        return;
-      }
-    });
-
-
-    query.on('row', function(row) {
-       notifyReservation(row.car_plate,true);
-    });
-
-    query.on('end', function(result) {
-       done(client);
-       log.debug("Scan pending reservations END")
-    });
-
-  });
+    return car_obc;
 }
 
 function scanPendingCommands(car_plate) {
- log.debug("Scan pending commands START");
- pg.connect(cstr,function (err,client,done) {
-    if (err) {
-      console.error('PgConnect error',err);
-      log.error('PgConnect error',err);
-      return;
-    }
+    log.debug("Scan pending commands START");
+    pg.connect(cstr, function (err, client, done) {
+        if (err) {
+            console.error('PgConnect error', err);
+            log.error('PgConnect error', err);
+            return;
+        }
 
-    var where_carplate = (typeof car_plate!= 'undefined' ?" AND car_plate='"+car_plate+"'":"");
+        var where_carplate = (typeof car_plate != 'undefined' ? " AND car_plate='" + car_plate + "'" : "");
 
-    var sql = "SELECT car_plate, count(*) as cnt FROM commands WHERE to_send = TRUE " + where_carplate + " GROUP BY car_plate ";
-    var query = client.query(sql, null , function(err,result) {
-      if (err) {
-        console.error('Query commands error',err);
-        log.error("Scan pending commands (Where:"+where_carplate+")",err);
-        return;
-      }
+        var sql = "SELECT car_plate, count(*) as cnt FROM commands WHERE to_send = TRUE " + where_carplate + " GROUP BY car_plate ";
+        var query = client.query(sql, null, function (err, result) {
+            if (err) {
+                console.error('Query commands error', err);
+                log.error("Scan pending commands (Where:" + where_carplate + ")", err);
+                return;
+            }
+        });
+
+
+        query.on('row', function (row) {
+            notifyCommand(row.car_plate, true);
+        });
+
+        query.on('end', function (result) {
+            done(client);
+            log.debug("Scan pending commands END");
+        });
+
     });
-
-
-    query.on('row', function(row) {
-       notifyCommand(row.car_plate,true);
-    });
-
-    query.on('end', function(result) {
-       done(client);
-      log.debug("Scan pending commands END");
-    });
-
-  });
 }
 
 
 function doListen() {
-  log.debug("Listen PG notifies");
+    log.debug("Listen PG notifies");
 
-  pgpubsub.addChannel('reservations', function(payload) {
-     console.log("reservations -->",payload);
-     log.debug("Notify reservation:",payload);
-     var p = payload.split(',');
-     notifyReservation(p[1],p[2]);
-  });
+    pgpubsub.addChannel('reservations', function (payload) {
+        console.log("reservations -->", payload);
+        log.debug("Notify reservation:", payload);
+        var p = payload.split(',');
+        notifyReservation(p[1], p[2]);
+        wakeCar(p[1], p[3]);
+    });
 
-    pgpubsub.addChannel('commands', function(payload) {
-     console.log("commands -->",payload);
-     log.debug("Notify command:",payload);
-     var p = payload.split(',');
-      notifyCommand(p[1],p[2]); ;
-  });
+    pgpubsub.addChannel('commands', function (payload) {
+        console.log("commands -->", payload);
+        log.debug("Notify command:", payload);
+        var p = payload.split(',');
+        notifyCommand(p[1], p[2]);
+        wakeCar(p[1], p[3]);
+    });
 
 }
 
-function notifyReservation(car_plate,to_send) {
-  if (to_send) {
-    sock.send([car_plate,'{"reservations":1}']);
-    console.log('SEND:', car_plate,'{"reservation":1}');
-    log.debug('SEND:', car_plate,'{"reservation":1}');
-  }
+function notifyReservation(car_plate, to_send) {
+    if (to_send) {
+        sock.send([car_plate, '{"reservations":1}']);
+        console.log('SEND:', car_plate, '{"reservation":1}');
+        log.debug('SEND:', car_plate, '{"reservation":1}');
+    }
 }
 
 
-function notifyCommand(car_plate,to_send) {
-  if (to_send) {
-    sock.send([car_plate,'{"commands":1}']);
-    console.log('SEND:', car_plate,'{"command":1}');
-    log.debug('SEND:', car_plate,'{"command":1}');
-  }
+function notifyCommand(car_plate, to_send) {
+    if (to_send) {
+        sock.send([car_plate, '{"commands":1}']);
+        console.log('SEND:', car_plate, '{"command":1}');
+        log.debug('SEND:', car_plate, '{"command":1}');
+    }
 }
+
+function wakeCar(car_plate, version) {
+    if (parseInt(extractObcVersion(version)) >= 110) {
+        request({
+            url: gatewayApiURL + '/wakeAndroid/' + car_plate,
+            timeout: 5000 // 5 sec
+        }, function (error, response, body) {
+            if (error) {
+
+                console.log(error)
+            } else {
+                console.log(body);
+                if (response.statusCode === 200) {
+                    console.log("wakeCar Sent succesfyully to " + car_plate);
+                } else {
+                    console.log("wakeCar error code: " + response.statusCode);
+                }
+            }
+        });
+    }
+}
+
 
 var sock = zmq.socket('xpub');
 
-var count =0;
+var count = 0;
 
 sock.connect(zmqRouterUrl);
 console.log('Publisher connect to ' + zmqRouterUrl);
 log.debug('Publisher connect to ' + zmqRouterUrl);
 
-sock.on("message",function(data) {
+sock.on("message", function (data) {
 
-    var isSubscribe = data[0]===1;
-    var type =  isSubscribe ? 'subscribe' : 'unsubscribe';
-    var channel = (data.length>1) ?  data.slice(1).toString() : "*";
+    var isSubscribe = data[0] === 1;
+    var type = isSubscribe ? 'subscribe' : 'unsubscribe';
+    var channel = (data.length > 1) ? data.slice(1).toString() : "*";
 
     console.info(type + ':' + channel);
     log.info(type + ':' + channel);
@@ -157,15 +194,16 @@ sock.on("message",function(data) {
     }
 
 
- });
+});
 
 scanPendingCommands();
 scanPendingReservations();
 
-setInterval(scanPendingCommands,60000);
-setInterval(scanPendingReservations,60000);
+setInterval(scanPendingCommands, 60000);
+setInterval(scanPendingReservations, 60000);
 
 doListen();
 
 log.debug("Started");
 console.log(log.levels());
+
