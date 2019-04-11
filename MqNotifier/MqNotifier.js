@@ -117,7 +117,7 @@ function doListen() {
      log.debug("Notify reservation:",payload);
      var p = payload.split(',');
      notifyReservation(p[1],p[2]);
-      wakeCar(p[1],[3]);
+      wakeCar(p[1],p[3]);
   });
 
     pgpubsub.addChannel('commands', function(payload) {
