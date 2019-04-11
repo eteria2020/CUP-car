@@ -66,6 +66,14 @@ function scanPendingReservations(car_plate) {
 
   });
 }
+function extractObcVersion(software_version) {
+    var car_obc = "0.0.0";
+    try {
+        car_obc = (software_version || "0.0.0").replace(/[^0-9.]/g, "").split('.');
+        car_obc = car_obc[0].concat(car_obc[1]);
+    }catch (Exception){}
+    return car_obc;
+}
 
 function scanPendingCommands(car_plate) {
  log.debug("Scan pending commands START");
@@ -109,13 +117,15 @@ function doListen() {
      log.debug("Notify reservation:",payload);
      var p = payload.split(',');
      notifyReservation(p[1],p[2]);
+      wakeCar(p[1],[3]);
   });
 
     pgpubsub.addChannel('commands', function(payload) {
      console.log("commands -->",payload);
      log.debug("Notify command:",payload);
      var p = payload.split(',');
-      notifyCommand(p[1],p[2]); ;
+      notifyCommand(p[1],p[2]);
+        wakeCar(p[1],p[3]);
   });
 
 }
@@ -134,12 +144,11 @@ function notifyCommand(car_plate,to_send) {
     sock.send([car_plate,'{"commands":1}']);
     console.log('SEND:', car_plate,'{"command":1}');
     log.debug('SEND:', car_plate,'{"command":1}');
-    wakeCar(car_plate);
   }
 }
 
-function wakeCar(car_plate) {
-
+function wakeCar(car_plate, version) {
+if(parseInt(extractObcVersion(version))>=110) {
     request({
         url: gatewayApiURL + '/wakeAndroid/' + car_plate,
         timeout: 5000 // 5 sec
@@ -156,6 +165,7 @@ function wakeCar(car_plate) {
             }
         }
     });
+}
 }
 
 
