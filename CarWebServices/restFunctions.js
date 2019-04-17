@@ -634,9 +634,9 @@ function init (opt) {
                      }
 
                      var query = " SELECT * FROM cars_configurations " +
-                         " WHERE car_plate=$1 OR fleet_id= (SELECT fleet_id FROM cars WHERE plate=$1) " +
+                         " WHERE car_plate=$1 OR $1 LIKE car_plate_pattern OR fleet_id= (SELECT fleet_id FROM cars WHERE plate=$1) " +
                          " OR (fleet_id is null AND model is null AND car_plate is null) " +
-                         " ORDER BY key, car_plate DESC , model DESC, fleet_id DESC ";
+                         " ORDER BY key, car_plate DESC, car_plate_pattern DESC, model DESC, fleet_id DESC ";
 
                      var params = [req.params.car_plate];
 
