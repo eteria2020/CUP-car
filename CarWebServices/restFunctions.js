@@ -634,9 +634,9 @@ function init (opt) {
                      }
 
                      var query = " SELECT * FROM cars_configurations " +
-                         " WHERE car_plate=$1 OR $1 LIKE car_plate_pattern OR fleet_id= (SELECT fleet_id FROM cars WHERE plate=$1) " +
+                         " WHERE car_plate=$1 OR car_plate_pattern IS NOT NULL OR fleet_id= (SELECT fleet_id FROM cars WHERE plate=$1) " +
                          " OR (fleet_id is null AND model is null AND car_plate is null) " +
-                         " ORDER BY key, car_plate DESC, car_plate_pattern DESC, model DESC, fleet_id DESC ";
+                         " ORDER BY key, car_plate DESC, model DESC, fleet_id DESC ";
 
                      var params = [req.params.car_plate];
 
@@ -652,7 +652,9 @@ function init (opt) {
                                  if((typeof result !== 'undefined')){
                                      for(i=0;i<result.rows.length; i++) {
                                          //configs.set(result.rows[i].key, result.rows[i].value);
-                                         configs[result.rows[i].key] = result.rows[i].value;
+                                         if(result.rows[i].car_plate_pattern===null || req.params.car_plate.startsWith(result.rows[i].car_plate_pattern)) {
+                                             configs[result.rows[i].key] = result.rows[i].value;
+                                         }
                                      }
                                  }
                                  sendOutJSON(res,200,null,configs);//res.send(200,configs);
