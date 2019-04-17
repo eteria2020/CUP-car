@@ -653,6 +653,7 @@ function init (opt) {
                                      for(i=0;i<result.rows.length; i++) {
                                          //configs.set(result.rows[i].key, result.rows[i].value);
                                          if(result.rows[i].car_plate_pattern===null || req.params.car_plate.startsWith(result.rows[i].car_plate_pattern)) {
+                                             console.log("pattern",result.rows[i].car_plate_pattern,req.params.car_plate.startsWith(result.rows[i].car_plate_pattern));
                                              configs[result.rows[i].key] = result.rows[i].value;
                                          }
                                      }
