@@ -66,7 +66,7 @@ var redisCluster =      globalConfig.redisCluster || [];
 
 var restify = require('restify');
 
-var pg = require('pg').native;
+var pg = require('pg');//.native;
 pg.defaults.poolSize = 50;
 pg.defaults.poolIdleTimeout=1000; // 1 sec
 
