@@ -615,6 +615,41 @@ function init (opt) {
 		    });
 
 	},
+         getWebUser: function(req, res, next) {
+             next();
+             pg.connect(conString, function(err, client, done) {
+
+                 if (pgError(err,client)) {
+                     responseError(res,err);
+                     return ;//next(false);
+                 }
+
+                 var query = " SELECT * FROM webuser ";
+
+                 var auth = localParseAuth(req);
+
+                 var params = [];
+
+
+                 client.query(
+                     query,
+                     params,
+                     function(err, result) {
+                         if (pgError(err,client)) {
+                             responseError(res,err);
+                         } else {
+                             done();
+
+                             if((typeof result !== 'undefined')){
+
+                             }
+                             sendOutJSON(res,200,null,result.rows);//res.send(200,configs);
+                         }
+                     }
+                 );
+             });
+
+         },
 
 
      /**

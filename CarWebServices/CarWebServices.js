@@ -278,6 +278,11 @@ function registerServer(server) {
         {path: '/v2/business-employees', version: '1.0.0'},
         funcs.getBusinessEmployeesNew
     );
+
+    server.get(
+        {path: '/webuser', version: '1.0.0'},
+        funcs.getWebUser
+    );
 }
 
 
