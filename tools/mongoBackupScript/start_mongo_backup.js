@@ -199,12 +199,13 @@ function zip_dump(){
 function deleteOldBackups(){
 	if(backup_done&&zip_done) {
 		exec('ls /home/data/mongo_remote | grep mongoback_ | sort -r', function callback(error, stdout, stderr) {
+			let number_of_backups_to_keep=2;
 			let list = stdout.substring(0, stdout.length - 1).split("\n");
-			if (list.length > 2) {
-				for (let x = 0; x < 2; x++) {
+			if (list.length > number_of_backups_to_keep) {
+				for (let x = 0; x < number_of_backups_to_keep; x++) {
 					console.log("ok /home/data/mongo_remote/" + list[x]);
 				}
-				for (let x = 2; x < list.length; x++) {
+				for (let x = number_of_backups_to_keep; x < list.length; x++) {
 					console.log("rm /home/data/mongo_remote/" + list[x]);
 					exec("rm /home/data/mongo_remote/" + list[x]);
 				}
@@ -213,8 +214,7 @@ function deleteOldBackups(){
 		});
 	}
 }
-//start 15 21 > 16 31
-//start 14 45 >
+
 do_backup();
 setInterval(check_if_tunnel_exist,5000);
-setInterval(function(){console.log("timeNow",new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''));},10000);
+setInterval(function(){console.log("timeNow",new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''));},10000);//questa data+ora è in iso per non utilizzare dipendenze
