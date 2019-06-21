@@ -1,0 +1,11 @@
+#!/usr/bin/expect
+
+set pass "REMOTE_SSH_PASSWORD"
+
+spawn ssh REMOTE_SSH_USERNAME@REMOTE_URL -L 2700:localhost:27017 -N
+
+expect "REMOTE_SSH_USERNAME@REMOTE_URL's password:"
+
+send "$pass\r"
+
+interact
