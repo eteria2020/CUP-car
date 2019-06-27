@@ -1430,6 +1430,10 @@ function init (opt) {
 
             var jsondata = JSON.parse(body);
 
+            if(typeof jsondata.address === 'undefined'){
+				return cb('');
+            }
+
             var road = (typeof jsondata.address.road !== 'undefined') ? jsondata.address.road : (typeof jsondata.address.pedestrian !== 'undefined') ? jsondata.address.pedestrian : '';
 
             var city = (typeof jsondata.address.town !== 'undefined') ? jsondata.address.town : jsondata.address.city;
