@@ -1450,8 +1450,8 @@ function init (opt) {
     }
 
     function sendSosViaSms(trip_id, cb) {
-        var url = "http://publicstage.sharengo.it/partner-sos-sms?trip_id=" + trip_id;
-        // var url = "http://public.sharengo.it/partner-sos-sms?trip_id=" + trip_id;
+        //var url = "http://publicstage.sharengo.it/partner-sos-sms?trip_id=" + trip_id;
+        var url = "http://www.sharengo.it/partner-sos-sms?trip_id=" + trip_id;
 
         request({
             url: url,
