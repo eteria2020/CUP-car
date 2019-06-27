@@ -338,31 +338,44 @@ function init (opt) {
                      if(event.intval == 3) {
                          event.customer_id = 139765;
                      }
+
                      query = "INSERT INTO messages_outbox  (destination,type,subject,submitted,meta) VALUES ('support','SOS','SOS call',now(),$1)";
                      params = [JSON.stringify(event)];
-                     if(event.intval == 3) { //urto black box
-                         query2 = "UPDATE cars_info SET crash = $2 where car_plate = $1";
-                         params2 = [event.car_plate, event.trip_id];
-                         setTimeout(function () { //first try
-                             getIncidentDetail(event.trip_id, function (err,res) {
 
-                                 if (err) {
-                                     setTimeout(function () { //second try
-                                         getIncidentDetail(event.trip_id, function (err,res) {
-                                             if (err) {
-                                                 console.error("Unable to retrieve incident details");
-                                             }
-                                         })
-                                     }, 10 * 60 * 1000)
-                                 }
-                             })
+                     switch (event.intval) {
+                         case 1:    // SOS
+                                sendSosViaSms(event.trip_id,function (err,res) {
+                                    if (err) {
+                                        console.error("Unable send SOS via SMS");
+                                    }
+                                });
+                             break;
+                         case 3:    // urto black box
+                             query2 = "UPDATE cars_info SET crash = $2 where car_plate = $1";
+                             params2 = [event.car_plate, event.trip_id];
+                             setTimeout(function () { //first try
+                                 getIncidentDetail(event.trip_id, function (err,res) {
 
-                         }, 10 * 60 * 1000);
+                                     if (err) {
+                                         setTimeout(function () { //second try
+                                             getIncidentDetail(event.trip_id, function (err,res) {
+                                                 if (err) {
+                                                     console.error("Unable to retrieve incident details");
+                                                 }
+                                             })
+                                         }, 10 * 60 * 1000)
+                                     }
+                                 })
+
+                             }, 10 * 60 * 1000);
+                             break;
+                         case 4:    // battery disconnected
+                             query2 = "UPDATE cars_info SET service_battery = now() where car_plate = $1";
+                             params2 = [event.car_plate];
+                             break;
                      }
-                     if(event.intval == 4) { // battery disconnected
-                         query2 = "UPDATE cars_info SET service_battery = now() where car_plate = $1";
-                         params2 = [event.car_plate];
-                     }
+
+
                      break;
                  case "PARK":
                      if(event.intval ==1) {
@@ -1433,6 +1446,29 @@ function init (opt) {
             console.error("Exception while executing getAddressFromCoordinates " +e + " " +body);
             return cb('');
         }
+        });
+    }
+
+    function sendSosViaSms(trip_id, cb) {
+        var url = "http://publicstage.sharengo.it/partner-sos-sms?trip_id=" + trip_id;
+        // var url = "http://public.sharengo.it/partner-sos-sms?trip_id=" + trip_id;
+
+        request({
+            url: url,
+            timeout: 5000 // 5 sec
+        }, function (error, response, body) {
+            try {
+                if(error || response.statusCode !=200) {
+                    return cb('');
+                }
+
+                var jsondata = JSON.parse(body.trim());
+
+                return cb(null, jsondata);
+            } catch  (e) {
+                console.error("Exception sendSosViaSms " + e + " '" + body +"'");
+                return cb('');
+            }
         });
     }
 
